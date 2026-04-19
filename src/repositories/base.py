@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, asc
 from core.database import Base
 
+
 # Generic type for SQLAlchemy model
 ModelType = TypeVar("ModelType", bound=Base)
 

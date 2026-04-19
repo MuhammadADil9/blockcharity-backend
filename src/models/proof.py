@@ -7,10 +7,6 @@ from database import Base
 
 
 
-
-
-
-
 class Proof(Base):
     __tablename__ = "proofs"
 
