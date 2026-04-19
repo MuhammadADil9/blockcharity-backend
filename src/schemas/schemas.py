@@ -1,6 +1,21 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from enum import IntEnum
+
+
+
+class CampaignCategory(IntEnum):
+    weatherCrisis = 0
+    shelter = 1
+    food = 2
+
+CATEGORY_LABELS = {
+    CampaignCategory.weatherCrisis: "Weather Crisis",
+    CampaignCategory.shelter: "Shelter",
+    CampaignCategory.food: "Food",
+}
+
 
 
 # 1. The Base: Fields common to both reading and writing
@@ -50,8 +65,9 @@ class CampaignCreateRequest(BaseModel):
     title: str
     description: str
     location: str
-    endDate: datetime      # ISO String
-    milestone: str    # string representation of number
+    endDate: datetime
+    milestone: str
+    category: int = 0  # 0=weatherCrisis, 1=shelter, 2=food
 
     class Config:
         from_attributes = True
@@ -64,7 +80,7 @@ class CampaignResponse(BaseModel):
     milestone_amount: str
     current_amount: str
     status: int          # 0: Funding, 1: Met, etc.
-    endDate: datetime
+    end_date: datetime
     distributor_address: str
     
     class Config:
