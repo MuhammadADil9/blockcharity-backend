@@ -15,14 +15,14 @@ contract = w3.eth.contract(address=settings.CONTRACT_ADDRESS, abi=contract_abi)
 
 EVENT_HANDLERS = {
     "CampaignCreated": campaign_handler.handle_campaign_created,
-    "MilestoneAchieved": campaign_handler.handle_milestone_achieved,
-    "CampaignCompleted": campaign_handler.handle_campaign_completed,
-    "CampaignCancelled": campaign_handler.handle_campaign_cancelled,
     "DonationReceived": donation_handler.handle_donation_received,
-    "RefundIssued": donation_handler.handle_refund_issued,
-    "SecurityRefundIssued": donation_handler.handle_security_refund,
+    "MilestoneAchieved": campaign_handler.handle_milestone_achieved,
     "ProofUploaded": proof_handler.handle_proof_uploaded,
     "VoteCast": vote_handler.handle_vote_cast,
+    "CampaignCompleted": campaign_handler.handle_campaign_completed,
+    "CampaignCancelled": campaign_handler.handle_campaign_cancelled,
+    "RefundIssued": donation_handler.handle_refund_issued,
+    "SecurityRefundIssued": donation_handler.handle_security_refund,
 }
 
 async def process_event(log):

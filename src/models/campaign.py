@@ -6,7 +6,6 @@ from sqlalchemy.sql import func
 from database import Base
 
 
-
 class Campaign(Base):
     __tablename__ = "campaigns"
 
@@ -22,15 +21,21 @@ class Campaign(Base):
     
     milestone_amount: Mapped[int] = mapped_column(Numeric(78, 0))  # Wei amount
     current_amount: Mapped[int] = mapped_column(Numeric(78, 0), default=0)
-    is_active: Mapped[int] = mapped_column(Integer, default=0)  # 0=inactive, 1=active
-    status: Mapped[int] = mapped_column(Integer, default=0)  # 0=pending, 1=completed, 2=cancelled
     
-    ipfs_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Latest proof
-    proof_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Contract enums
+    # CampaignStatus: 0=active, 1=completed, 2=canceled
+    status: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # CampaignActivityStatus: 0=inFunding, 1=milestoneAchieved, 2=proofToBeUploaded, 3=voting, 4=result
+    activity_status: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # Aggregated vote data (cached from contract for fast queries)
+    positive_votes: Mapped[int] = mapped_column(Integer, default=0)
+    negative_votes: Mapped[int] = mapped_column(Integer, default=0)
+    total_voters: Mapped[int] = mapped_column(Integer, default=0)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     
     distributor_user = relationship("User", back_populates="campaigns")
     donations = relationship("Donation", back_populates="campaign")
     proofs = relationship("Proof", back_populates="campaign")
-    votes = relationship("Vote", back_populates="campaign")
