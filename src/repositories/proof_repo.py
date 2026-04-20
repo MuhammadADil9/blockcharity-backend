@@ -10,7 +10,7 @@ class ProofRepository(BaseRepository[Proof]):
         super().__init__(Proof, db_session)
 
     # ------------------------------------------------------------------ #
-    #  Read                                                                #
+    #  Read
     # ------------------------------------------------------------------ #
 
     def get_by_campaign(
@@ -39,7 +39,7 @@ class ProofRepository(BaseRepository[Proof]):
         )
 
     # ------------------------------------------------------------------ #
-    #  Write                                                               #
+    #  Write
     # ------------------------------------------------------------------ #
 
     def create_proof(
@@ -54,26 +54,3 @@ class ProofRepository(BaseRepository[Proof]):
             ipfs_hash=ipfs_hash,
             uploaded_by=uploaded_by,
         )
-
-    def update_verification_counts(
-        self,
-        proof_id: int,
-        vote_yes: bool,
-    ) -> Optional[Proof]:
-        """
-        Atomically increment verification_count_yes or verification_count_no.
-        Uses SQL-level increment to be safe under concurrent vote processing.
-        """
-        if vote_yes:
-            self.db.query(Proof).filter(Proof.id == proof_id).update(
-                {Proof.verification_count_yes: Proof.verification_count_yes + 1},
-                synchronize_session=False,
-            )
-        else:
-            self.db.query(Proof).filter(Proof.id == proof_id).update(
-                {Proof.verification_count_no: Proof.verification_count_no + 1},
-                synchronize_session=False,
-            )
-
-        self.db.commit()
-        return self.get(proof_id)

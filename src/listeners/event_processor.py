@@ -8,10 +8,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Load ABI once
 with open(settings.ABI_PATH) as f:
     contract_abi = json.load(f)
-w3 = Web3()
+
+# Connect to Web3 provider (HTTP for historical, WS for real-time)
+w3 = Web3(Web3.WebsocketProvider(settings.RPC_URL))  # or HTTPProvider for polling
+
 contract = w3.eth.contract(address=settings.CONTRACT_ADDRESS, abi=contract_abi)
+
+# Precompute event signature -> event name mapping
+event_signatures = {}
+for event_name, event in contract.events.items():
+    event_signatures[event.abi['signature']] = event_name
 
 EVENT_HANDLERS = {
     "CampaignCreated": campaign_handler.handle_campaign_created,
@@ -28,23 +37,18 @@ EVENT_HANDLERS = {
 async def process_event(log):
     """Decode log and call handler"""
     try:
-        receipt = log  # raw log from WebSocket
-        event_name = None
-        # Find event signature in ABI
-        for event in contract.events:
-            if event().abi['signature'] == receipt['topics'][0].hex():
-                event_name = event().abi['name']
-                break
+        topic = log['topics'][0].hex()
+        event_name = event_signatures.get(topic)
         if not event_name:
             return
         
         # Decode event data
-        decoded = contract.events[event_name]().process_log(receipt)
+        decoded = contract.events[event_name]().process_log(log)
         args = decoded['args']
         
         handler = EVENT_HANDLERS.get(event_name)
         if handler:
-            await handler(args, receipt)
+            await handler(args, log)
         else:
             logger.info(f"No handler for event: {event_name}")
     except Exception as e:
