@@ -10,7 +10,7 @@ class Campaign(Base):
     __tablename__ = "campaigns"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    distributor_address: Mapped[str] = mapped_column(String, ForeignKey("users.address"))
+    distributor_address: Mapped[str] = mapped_column(String, ForeignKey("distributors.address"))
     
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
@@ -36,6 +36,6 @@ class Campaign(Base):
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     
-    distributor_user = relationship("User", back_populates="campaigns")
+    distributor_user = relationship("Distributor", back_populates="campaigns")
     donations = relationship("Donation", back_populates="campaign")
     proofs = relationship("Proof", back_populates="campaign")
