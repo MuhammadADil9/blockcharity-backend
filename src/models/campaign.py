@@ -18,9 +18,10 @@ class Campaign(Base):
     location: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     image_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     end_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    
     milestone_amount: Mapped[int] = mapped_column(Numeric(78, 0))  # Wei amount
     current_amount: Mapped[int] = mapped_column(Numeric(78, 0), default=0)
+    proof_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    voting_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Contract enums
     # CampaignStatus: 0=active, 1=completed, 2=canceled

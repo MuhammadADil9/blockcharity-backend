@@ -1,155 +1,274 @@
-import logging
-from typing import List, Optional, Dict, Any
+from typing import Optional
 from sqlalchemy.orm import Session
 from repositories.campaign_repo import CampaignRepository
+from repositories.distributor_repo import DistributorRepository
 from repositories.donation_repo import DonationRepository
-from repositories.user_repo import UserRepository
 from models.campaign import Campaign
-from schemas.campaign import CampaignResponse, CampaignStats
+import logging
 
 logger = logging.getLogger(__name__)
 
 class CampaignService:
     def __init__(self, db: Session):
-        self.campaign_repo = CampaignRepository(db)
-        self.donation_repo = DonationRepository(db)
-        self.user_repo = UserRepository(db)
         self.db = db
+        self.campaign_repo = CampaignRepository(db)
+        self.distributor_repo = DistributorRepository(db)
+        self.donation_repo = DonationRepository(db)
 
-    def sync_campaign_from_event(self, event_args: dict, tx_hash: str) -> Optional[Campaign]:
-        """
-        Called by CampaignCreated event handler.
-        Saves or updates campaign from blockchain event.
-        """
-        try:
-            campaign_id = event_args['campaignId']
-            distributor = event_args['distributor']
-            milestone = event_args['milestone']
+    # ------------------------------------------------------------------
+    # Event-driven sync (called by handlers)
+    # ------------------------------------------------------------------
 
-            # Ensure distributor exists in users table
-            if not self.user_repo.get_by_address(distributor):
-                self.user_repo.create(address=distributor)
-
-            # Upsert campaign
-            campaign = self.campaign_repo.upsert(
-                unique_fields={'id': campaign_id},
-                id=campaign_id,
-                distributor_address=distributor,
-                milestone_amount=milestone,
-                current_amount=0,
-                is_active=1,
-                status=0,  # 0 = pending (will become active after event, but event means active)
-                tx_hash=tx_hash
-            )
-            logger.info(f"Synced campaign {campaign_id} from event")
-            return campaign
-        except Exception as e:
-            logger.error(f"Failed to sync campaign from event: {e}")
-            self.db.rollback()
-            return None
-
-    def update_campaign_status(self, campaign_id: int, status: int, **extra) -> Optional[Campaign]:
-        """
-        Update campaign status (0=pending,1=active,2=completed,3=cancelled)
-        Also can update activity_status, current_amount, etc.
-        """
-        try:
-            campaign = self.campaign_repo.update(campaign_id, status=status, **extra)
-            if campaign:
-                logger.info(f"Campaign {campaign_id} status updated to {status}")
-            return campaign
-        except Exception as e:
-            logger.error(f"Failed to update campaign {campaign_id}: {e}")
-            self.db.rollback()
-            return None
-
-    def get_all_campaigns(
+    def sync_campaign_from_event(
         self,
-        skip: int = 0,
-        limit: int = 100,
-        status: Optional[int] = None,
-        distributor: Optional[str] = None
-    ) -> List[CampaignResponse]:
-        """Fetch campaigns with optional filters, compute aggregations."""
-        try:
-            if distributor:
-                campaigns = self.campaign_repo.get_multi_by(
-                    distributor_address=distributor,
-                    skip=skip,
-                    limit=limit
-                )
-            elif status is not None:
-                campaigns = self.campaign_repo.get_multi_by(
-                    status=status,
-                    skip=skip,
-                    limit=limit
-                )
-            else:
-                campaigns = self.campaign_repo.get_all(skip=skip, limit=limit)
-
-            # Convert to response schema with computed stats
-            result = []
-            for c in campaigns:
-                stats = self.get_campaign_stats(c.id)
-                result.append(CampaignResponse(
-                    id=c.id,
-                    distributor_address=c.distributor_address,
-                    title=c.title,
-                    description=c.description,
-                    milestone_amount=c.milestone_amount,
-                    current_amount=c.current_amount,
-                    status=c.status,
-                    is_active=c.is_active,
-                    donor_count=stats['donor_count'],
-                    total_raised=stats['total_raised'],
-                    avg_donation=stats['avg_donation'],
-                    created_at=c.created_at
-                ))
-            return result
-        except Exception as e:
-            logger.error(f"Failed to get campaigns: {e}")
-            return []
-
-    def get_campaign_details(self, campaign_id: int) -> Optional[CampaignResponse]:
-        """Get single campaign with full details and aggregations."""
-        try:
-            campaign = self.campaign_repo.get_by(id=campaign_id)
-            if not campaign:
-                return None
-            stats = self.get_campaign_stats(campaign_id)
-            return CampaignResponse(
-                id=campaign.id,
-                distributor_address=campaign.distributor_address,
-                title=campaign.title,
-                description=campaign.description,
-                milestone_amount=campaign.milestone_amount,
-                current_amount=campaign.current_amount,
-                status=campaign.status,
-                is_active=campaign.is_active,
-                donor_count=stats['donor_count'],
-                total_raised=stats['total_raised'],
-                avg_donation=stats['avg_donation'],
-                created_at=campaign.created_at
+        campaign_id: int,
+        distributor_address: str,
+        milestone_amount: int,
+        category_name: Optional[str],
+        tx_hash: str
+    ) -> Campaign:
+        """Called when CampaignCreated event is received."""
+        # Ensure distributor exists in DB (create if not)
+        distributor = self.distributor_repo.get_by_address(distributor_address)
+        if not distributor:
+            distributor = self.distributor_repo.create_or_update(
+                address=distributor_address
             )
-        except Exception as e:
-            logger.error(f"Failed to get campaign details {campaign_id}: {e}")
+            logger.info(f"Created new distributor record for {distributor_address}")
+
+        # Create campaign record using repo method
+        campaign = self.campaign_repo.create_from_event(
+            campaign_id=campaign_id,
+            distributor_address=distributor_address,
+            milestone_amount=milestone_amount,
+            category_name=category_name,
+            tx_hash=tx_hash
+        )
+        logger.info(f"Synced campaign {campaign_id} from event")
+
+        # Update distributor's active campaign
+        self.distributor_repo.set_active_campaign(distributor_address, campaign_id)
+
+        return campaign
+
+    def update_metadata(
+        self,
+        campaign_id: int,
+        title: str,
+        description: str,
+        category_name: Optional[str] = None,
+        location: Optional[str] = None,
+        end_date: Optional[str] = None,
+        image_url: Optional[str] = None
+    ) -> Optional[Campaign]:
+        """Update off-chain metadata (called by API after campaign creation)."""
+        campaign = self.campaign_repo.get_by_id(campaign_id)
+        if not campaign:
+            logger.error(f"Campaign {campaign_id} not found for metadata update")
             return None
 
-    def get_campaign_stats(self, campaign_id: int) -> Dict[str, Any]:
+        # Use repo update method (assumes update method accepts these fields)
+        # Note: Your Campaign model has these fields; update method uses **kwargs
+        return self.campaign_repo.update(
+            campaign_id,
+            title=title,
+            description=description,
+            category_name=category_name,
+            location=location,
+            end_date=end_date,
+            image_url=image_url
+        )
+
+    def process_donation(
+        self,
+        campaign_id: int,
+        donor_address: str,
+        amount_wei: int,
+        tx_hash: str
+    ) -> None:
+        """Called by DonationReceived handler."""
+        # Create donation record (idempotent)
+        donation = self.donation_repo.create_or_ignore(
+            tx_hash=tx_hash,
+            campaign_id=campaign_id,
+            donor_address=donor_address,
+            amount=amount_wei
+        )
+        if not donation:
+            logger.warning(f"Donation {tx_hash} already exists, skipping")
+            return
+
+        # Increment campaign current_amount atomically
+        campaign = self.campaign_repo.update_current_amount(campaign_id, amount_wei)
+        if not campaign:
+            logger.error(f"Campaign {campaign_id} not found for donation")
+            return
+
+        # Check if milestone reached
+        self._check_milestone_reached(campaign_id)
+
+        # Update donor's total donated (if Donor model exists)
+        # We'll assume donor_service is available; for now, call directly
+        # (Avoid circular import: import inside method or inject donor_service)
+        from services.donor_service import DonorService
+        donor_service = DonorService(self.db)
+        donor_service.increment_total_donated(donor_address, amount_wei)
+
+    def _check_milestone_reached(self, campaign_id: int) -> None:
+        """Internal: if current_amount >= milestone, update activity status and emit timer start."""
+        campaign = self.campaign_repo.get_by_id(campaign_id)
+        if not campaign:
+            return
+
+        if campaign.current_amount >= campaign.milestone_amount:
+            # Only transition if still in funding stage
+            if campaign.activity_status == 0:  # inFunding
+                self.campaign_repo.update_activity_status(campaign_id, 1)  # milestoneAchieved
+                logger.info(f"Campaign {campaign_id} reached milestone")
+                # Start 48-hour timer for proof upload
+                self._start_proof_timer(campaign_id)
+
+    def _start_proof_timer(self, campaign_id: int) -> None:
+        """Placeholder: schedule a background task to check proof upload after 48h."""
+        # Implementation will use Celery, APScheduler, or asyncio.create_task
+        # For now, just log and delegate to timer service
+        from services.timer_service import TimerService
+        timer = TimerService()
+        timer.schedule_proof_deadline(campaign_id, hours=48)
+        logger.info(f"Scheduled proof deadline for campaign {campaign_id} in 48h")
+
+    def process_milestone_achieved(self, campaign_id: int) -> None:
+        """Called by MilestoneAchieved event handler (already handled by _check_milestone_reached,
+        but can be used for explicit sync)."""
+        campaign = self.campaign_repo.update_activity_status(campaign_id, 1)
+        if campaign:
+            logger.info(f"Processed milestone achieved event for campaign {campaign_id}")
+
+    def process_funds_withdrawn(self, campaign_id: int, distributor_address: str, amount: int) -> None:
+        """Called by FundsWithdrawn event."""
+        # Update activity status to proofToBeUploaded (2)
+        campaign = self.campaign_repo.update_activity_status(campaign_id, 2)
+        if campaign:
+            logger.info(f"Funds withdrawn for campaign {campaign_id}, now proofToBeUploaded")
+            # No need to start another timer; timer already running from milestone reached
+
+    def process_proof_uploaded(
+        self,
+        campaign_id: int,
+        ipfs_hash: str,
+        uploaded_by: str,
+        tx_hash: str
+    ) -> None:
+        """Called by ProofUploaded handler."""
+        # Create proof record (using proof_repo)
+        from repositories.proof_repo import ProofRepository
+        proof_repo = ProofRepository(self.db)
+        proof_repo.create_proof(
+            campaign_id=campaign_id,
+            ipfs_hash=ipfs_hash,
+            uploaded_by=uploaded_by
+        )
+        # Update campaign activity status to voting (3)
+        self.campaign_repo.update_activity_status(campaign_id, 3)
+        logger.info(f"Proof uploaded for campaign {campaign_id}, now voting stage")
+        # Start 24-hour timer for triggerResult
+        self._start_voting_timer(campaign_id)
+
+    def _start_voting_timer(self, campaign_id: int) -> None:
+        """Schedule triggerResult after 24h."""
+        from services.timer_service import TimerService
+        timer = TimerService()
+        timer.schedule_voting_deadline(campaign_id, hours=24)
+        logger.info(f"Scheduled voting deadline for campaign {campaign_id} in 24h")
+
+    def process_vote_cast(
+        self,
+        campaign_id: int,
+        voter_address: str,
+        vote_value: bool,
+        tx_hash: str
+    ) -> None:
+        """Called by VoteCast handler."""
+        from repositories.vote_repo import VoteRepository
+        vote_repo = VoteRepository(self.db)
+        # Create vote record (idempotent)
+        vote = vote_repo.create_vote(
+            tx_hash=tx_hash,
+            campaign_id=campaign_id,
+            voter_address=voter_address,
+            vote=vote_value
+        )
+        if not vote:
+            logger.warning(f"Vote {tx_hash} already exists, skipping")
+            return
+
+        # Update campaign aggregates
+        stats = vote_repo.get_campaign_vote_stats(campaign_id)
+        self.campaign_repo.update_vote_counts(
+            campaign_id,
+            positive_votes=stats["yes"],
+            negative_votes=stats["no"],
+            total_voters=stats["total"]
+        )
+        logger.info(f"Vote cast for campaign {campaign_id} by {voter_address}: {vote_value}")
+
+    def trigger_result(self, campaign_id: int) -> None:
         """
-        Compute aggregations: total raised (from donations table),
-        donor count, average donation.
+        Called by timer or admin. 
+        This method should call the smart contract's triggerResult() via web3,
+        using owner private key. After transaction is mined, the resulting
+        event (CampaignCompleted or CampaignCancelled) will be handled separately.
         """
-        try:
-            donations = self.donation_repo.get_by_campaign(campaign_id)
-            total_raised = sum(int(d.amount) for d in donations) if donations else 0
-            donor_count = len(set(d.donor_address for d in donations))
-            avg_donation = total_raised // donor_count if donor_count > 0 else 0
-            return {
-                'total_raised': total_raised,
-                'donor_count': donor_count,
-                'avg_donation': avg_donation
-            }
-        except Exception as e:
-            logger.error(f"Failed to compute stats for campaign {campaign_id}: {e}")
-            return {'total_raised': 0, 'donor_count': 0, 'avg_donation': 0}
+        # Placeholder: actual blockchain call will be implemented in a blockchain service.
+        # For now, log and delegate.
+        from services.blockchain_service import BlockchainService
+        bc = BlockchainService()
+        tx_hash = bc.call_trigger_result(campaign_id)
+        logger.info(f"Triggered result for campaign {campaign_id}, tx: {tx_hash}")
+
+    def process_campaign_completed(self, campaign_id: int) -> None:
+        """Called by CampaignCompleted event handler."""
+        campaign = self.campaign_repo.update_status(campaign_id, 1)  # completed
+        if campaign:
+            self.campaign_repo.update_activity_status(campaign_id, 4)  # result
+            # Increment distributor's successful campaigns
+            dist_addr = campaign.distributor_address
+            self.distributor_repo.update_successful_campaigns(dist_addr, 1)
+            self.distributor_repo.set_active_campaign(dist_addr, None)
+            logger.info(f"Campaign {campaign_id} completed successfully")
+
+    def process_campaign_cancelled(self, campaign_id: int, reason: str = "Cancelled") -> None:
+        """Called by CampaignCancelled event handler."""
+        campaign = self.campaign_repo.update_status(campaign_id, 2)  # canceled
+        if campaign:
+            self.campaign_repo.update_activity_status(campaign_id, 4)  # result
+            # Clear active campaign from distributor
+            dist_addr = campaign.distributor_address
+            self.distributor_repo.set_active_campaign(dist_addr, None)
+            # If cancelled due to fraud, distributor might be banned; that will be handled separately.
+            logger.info(f"Campaign {campaign_id} cancelled: {reason}")
+
+    def force_cancel_no_proof(self, campaign_id: int) -> None:
+        """
+        Called by timer when no proof uploaded within 48h after milestone.
+        Calls contract's cancelCampaignBySmartContract as owner.
+        """
+        from services.blockchain_service import BlockchainService
+        bc = BlockchainService()
+        tx_hash = bc.call_cancel_campaign_by_smart_contract(campaign_id)
+        logger.info(f"Forced cancel for campaign {campaign_id} (no proof), tx: {tx_hash}")
+
+    # ------------------------------------------------------------------
+    # Public query methods (for API)
+    # ------------------------------------------------------------------
+
+    def get_campaign(self, campaign_id: int) -> Optional[Campaign]:
+        return self.campaign_repo.get_by_id(campaign_id)
+
+    def get_campaigns_paginated(self, cursor: int, limit: int):
+        # Use campaign_repo.get_all with offset/cursor
+        # Implementation depends on your pagination style
+        pass
+
+    def get_distributor_campaigns(self, distributor_address: str):
+        return self.campaign_repo.get_by_distributor(distributor_address)
