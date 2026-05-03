@@ -104,7 +104,7 @@
             {
                 "name": "_category",
                 "type": "uint8",
-                "internalType": "enum CharityPlatform.CategoryData"
+                "internalType": "enum CategoryData"
             }
         ],
         "outputs": [],
@@ -174,17 +174,17 @@
                     {
                         "name": "category",
                         "type": "uint8",
-                        "internalType": "enum CharityPlatform.CategoryData"
+                        "internalType": "enum CategoryData"
                     },
                     {
                         "name": "status",
                         "type": "uint8",
-                        "internalType": "enum CharityPlatform.CampaignStatus"
+                        "internalType": "enum CampaignStatus"
                     },
                     {
                         "name": "activityStatus",
                         "type": "uint8",
-                        "internalType": "enum CharityPlatform.CampaignActivityStatus"
+                        "internalType": "enum CampaignActivityStatus"
                     },
                     {
                         "name": "positiveVotes",
@@ -250,12 +250,12 @@
             {
                 "name": "status",
                 "type": "uint8",
-                "internalType": "enum CharityPlatform.CampaignStatus"
+                "internalType": "enum CampaignStatus"
             },
             {
                 "name": "activityStatus",
                 "type": "uint8",
-                "internalType": "enum CharityPlatform.CampaignActivityStatus"
+                "internalType": "enum CampaignActivityStatus"
             },
             {
                 "name": "positiveVotes",
@@ -333,17 +333,17 @@
                     {
                         "name": "category",
                         "type": "uint8",
-                        "internalType": "enum CharityPlatform.CategoryData"
+                        "internalType": "enum CategoryData"
                     },
                     {
                         "name": "status",
                         "type": "uint8",
-                        "internalType": "enum CharityPlatform.CampaignStatus"
+                        "internalType": "enum CampaignStatus"
                     },
                     {
                         "name": "activityStatus",
                         "type": "uint8",
-                        "internalType": "enum CharityPlatform.CampaignActivityStatus"
+                        "internalType": "enum CampaignActivityStatus"
                     },
                     {
                         "name": "positiveVotes",
@@ -414,17 +414,17 @@
                     {
                         "name": "category",
                         "type": "uint8",
-                        "internalType": "enum CharityPlatform.CategoryData"
+                        "internalType": "enum CategoryData"
                     },
                     {
                         "name": "status",
                         "type": "uint8",
-                        "internalType": "enum CharityPlatform.CampaignStatus"
+                        "internalType": "enum CampaignStatus"
                     },
                     {
                         "name": "activityStatus",
                         "type": "uint8",
-                        "internalType": "enum CharityPlatform.CampaignActivityStatus"
+                        "internalType": "enum CampaignActivityStatus"
                     },
                     {
                         "name": "positiveVotes",

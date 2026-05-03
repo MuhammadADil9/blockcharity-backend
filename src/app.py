@@ -1,10 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .config import database
-from .models import models
-from .routers import users, campaigns, profile
+from config.database import engine, Base
+# Import all models so their tables are registered with Base
+from models.donor import Donor
+from models.distributor import Distributor
+from models.campaign import Campaign
+from models.donation import Donation
+from models.vote import Vote
+from models.proof import Proof
+from models.lottery_winner import LotteryWinner
 
-models.Base.metadata.create_all(bind=database.engine)
+from api.routers import users, campaigns, profile
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Charity Dapp")
 

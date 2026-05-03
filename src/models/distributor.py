@@ -3,7 +3,7 @@ from typing import Optional, List
 from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
-from database import Base
+from config.database import Base
 
 
 class Distributor(Base):

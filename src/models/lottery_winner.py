@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import String, Integer, Boolean, DateTime, Text, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
-from database import Base
+from config.database import Base
 
 
 
@@ -12,7 +12,7 @@ class LotteryWinner(Base):
     __tablename__ = "lottery_winners"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    distributor_address: Mapped[str] = mapped_column(String, ForeignKey("users.address"))
+    distributor_address: Mapped[str] = mapped_column(String, ForeignKey("distributors.address"))
     campaign_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("campaigns.id"), nullable=True)
     prize_amount: Mapped[int] = mapped_column(Numeric(78, 0))  # Wei amount
     block_number: Mapped[int] = mapped_column(Integer)
@@ -20,7 +20,7 @@ class LotteryWinner(Base):
     claimed: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     
-    distributor_user = relationship("User")
+    distributor_user = relationship("Distributor")
     campaign = relationship("Campaign")
 
 

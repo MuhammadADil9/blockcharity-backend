@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import String, Integer, Boolean, DateTime, Text, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
-from database import Base
+from config.database import Base
 
 
 class Campaign(Base):
@@ -40,3 +40,4 @@ class Campaign(Base):
     distributor_user = relationship("Distributor", back_populates="campaigns")
     donations = relationship("Donation", back_populates="campaign")
     proofs = relationship("Proof", back_populates="campaign")
+    votes = relationship("Vote", back_populates="campaign")
