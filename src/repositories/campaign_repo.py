@@ -77,18 +77,33 @@ class CampaignRepository(BaseRepository[Campaign]):
         tx_hash: str = None,
     ) -> Campaign:
         """Called when CampaignCreated event is received"""
-        return self.create(
-            id=campaign_id,
-            distributor_address=distributor_address,
-            milestone_amount=milestone_amount,
-            category_name=category_name,
-            status=0,               # active
-            activity_status=0,      # inFunding
-            current_amount=0,
-            positive_votes=0,
-            negative_votes=0,
-            total_voters=0,
-        )
+        instance = self.get(campaign_id)
+        if instance:
+            # Update only the fields that come from the event, DO NOT overwrite API off-chain data
+            instance.distributor_address = distributor_address
+            instance.milestone_amount = milestone_amount
+            # Only update category_name if one was passed from the event
+            if category_name is not None:
+                instance.category_name = category_name
+            self.db.commit()
+            self.db.refresh(instance)
+            return instance
+        else:
+            # Create a shell record if indexer is faster than the API
+            return self.create(
+                id=campaign_id,
+                distributor_address=distributor_address,
+                title="Pending API Data...", # default to satisfy NOT NULL
+                description="Pending API Data...", # default to satisfy NOT NULL
+                milestone_amount=milestone_amount,
+                category_name=category_name,
+                status=0,               # active
+                activity_status=0,      # inFunding
+                current_amount=0,
+                positive_votes=0,
+                negative_votes=0,
+                total_voters=0,
+            )
 
 
 

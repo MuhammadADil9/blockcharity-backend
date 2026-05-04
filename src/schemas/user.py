@@ -78,13 +78,14 @@ class CampaignResponse(BaseModel):
     id: int
     title: str
     description: str
-    location: str
-    milestone_amount: str
-    current_amount: str
+    location: Optional[str] = None
+    milestone_amount: int
+    current_amount: int
     status: int          # 0: Funding, 1: Met, etc.
     activity_status: int
-    end_date: datetime
+    end_date: Optional[datetime] = None
     distributor_address: str
+    category_name: Optional[str] = None
     
     class Config:
         from_attributes = True

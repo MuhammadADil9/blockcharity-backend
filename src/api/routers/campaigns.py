@@ -45,7 +45,7 @@ def create_campaign(address: str, campaign_data: CampaignCreateRequest, db: Sess
         db_campaign.description = campaign_data.description
         db_campaign.location = campaign_data.location
         db_campaign.end_date = campaign_data.endDate
-        db_campaign.milestone_amount = campaign_data.milestone
+        db_campaign.milestone_amount = int(campaign_data.milestone)
         db_campaign.category_name = category_label
     else:
         db_campaign = Campaign(
@@ -55,7 +55,7 @@ def create_campaign(address: str, campaign_data: CampaignCreateRequest, db: Sess
             description=campaign_data.description,
             location=campaign_data.location,
             end_date=campaign_data.endDate,
-            milestone_amount=campaign_data.milestone,
+            milestone_amount=int(campaign_data.milestone),
             category_name=category_label,
             current_amount=0,
             status=0,
