@@ -49,11 +49,13 @@ class UserResponse(UserBase):
 
 
 class UserContactInfo(BaseModel):
-    firstName: Optional[str] = None
-    lastName: Optional[str] = None
+    address: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
-    country: Optional[str] = None # Maps to 'location' in DB
+    location: Optional[str] = None
+    profile_pic: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -80,6 +82,7 @@ class CampaignResponse(BaseModel):
     milestone_amount: str
     current_amount: str
     status: int          # 0: Funding, 1: Met, etc.
+    activity_status: int
     end_date: datetime
     distributor_address: str
     

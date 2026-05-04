@@ -10,7 +10,7 @@ from models.vote import Vote
 from models.proof import Proof
 from models.lottery_winner import LotteryWinner
 
-from api.routers import users, campaigns, profile
+from api.routers import users, campaigns, profile, rankings, analytics
 
 Base.metadata.create_all(bind=engine)
 
@@ -27,6 +27,8 @@ app.add_middleware(
 app.include_router(users.router)
 app.include_router(campaigns.router)
 app.include_router(profile.router)
+app.include_router(rankings.router)
+app.include_router(analytics.router)
 
 @app.get("/")
 def read_root():

@@ -1,14 +1,37 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from models.campaign import Campaign
 from models.distributor import Distributor
 from schemas.user import CampaignCreateRequest, CampaignResponse, CATEGORY_LABELS, CampaignCategory
 from config.database import get_db
 
-router = APIRouter(tags=["Campaigns"])
+router = APIRouter(prefix="/api", tags=["Campaigns"])
 
-@router.post("/{address}/create/", response_model=CampaignResponse)
+@router.get("/distributor/{address}/active-campaign", response_model=Optional[CampaignResponse])
+def get_active_campaign(address: str, db: Session = Depends(get_db)):
+    """Returns the currently active campaign for a distributor, or null."""
+    campaign = db.query(Campaign).filter(
+        Campaign.distributor_address == address,
+        Campaign.status == 0
+    ).first()
+    return campaign
+
+@router.get("/campaigns", response_model=List[CampaignResponse])
+def get_campaigns(filter: str = Query("all", description="all | active | finished"), db: Session = Depends(get_db)):
+    """Returns campaigns based on the specified filter."""
+    query = db.query(Campaign)
+    
+    if filter == "active":
+        query = query.filter(Campaign.status == 0)
+    elif filter == "finished":
+        # 1 = completed, 2 = canceled
+        query = query.filter(Campaign.status.in_([1, 2]))
+        
+    # Return all campaigns for "all"
+    return query.all()
+
+@router.post("/campaigns/{address}/create/", response_model=CampaignResponse)
 def create_campaign(address: str, campaign_data: CampaignCreateRequest, db: Session = Depends(get_db)):
     user = db.query(Distributor).filter(Distributor.address == address).first()
     if not user:
@@ -48,6 +71,6 @@ def create_campaign(address: str, campaign_data: CampaignCreateRequest, db: Sess
     db.refresh(db_campaign)
     return db_campaign
 
-@router.get("/{address}/list/", response_model=List[CampaignResponse])
+@router.get("/campaigns/{address}/list/", response_model=List[CampaignResponse])
 def get_distributor_campaigns(address: str, db: Session = Depends(get_db)):
     return db.query(Campaign).filter(Campaign.distributor_address == address).all()
