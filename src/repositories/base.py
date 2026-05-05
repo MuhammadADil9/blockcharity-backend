@@ -1,7 +1,7 @@
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, asc
-from core.database import Base
+from config.database import Base
 
 
 # Generic type for SQLAlchemy model

@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+import asyncio
+import logging
 from config.database import engine, Base
 # Import all models so their tables are registered with Base
 from models.donor import Donor
@@ -9,12 +12,30 @@ from models.donation import Donation
 from models.vote import Vote
 from models.proof import Proof
 from models.lottery_winner import LotteryWinner
+from models.sync_state import SyncState
 
 from api.routers import users, campaigns, profile, rankings, analytics
+from listeners.websocket_listener import listen_to_contract_events
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Charity Dapp")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: launch the blockchain event listener as a background task
+    logger.info("Starting blockchain event listener...")
+    listener_task = asyncio.create_task(listen_to_contract_events())
+    yield
+    # Shutdown: cancel the listener
+    listener_task.cancel()
+    try:
+        await listener_task
+    except asyncio.CancelledError:
+        logger.info("Blockchain event listener stopped.")
+
+app = FastAPI(title="Charity Dapp", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,7 +54,3 @@ app.include_router(analytics.router)
 @app.get("/")
 def read_root():
     return {"status": "active", "message": "Charity Dapp Backend is Running"}
-
-
-
-

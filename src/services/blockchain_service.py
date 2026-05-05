@@ -1,6 +1,6 @@
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
-from core.config import settings
+from config.config import settings
 import logging
 import json
 

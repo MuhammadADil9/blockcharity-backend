@@ -1,4 +1,4 @@
-from core.database import SessionLocal
+from config.database import SessionLocal
 from services.distributor_service import DistributorService
 import logging
 

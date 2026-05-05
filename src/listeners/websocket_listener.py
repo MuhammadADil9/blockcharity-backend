@@ -2,10 +2,10 @@ import asyncio
 import json
 import websockets
 from web3 import Web3
-from core.config import settings
+from config.config import settings
 from listeners.event_processor import process_event
 from repositories.sync_state_repo import SyncStateRepository
-from db.session import SessionLocal
+from config.database import SessionLocal
 import logging
 
 logger = logging.getLogger(__name__)

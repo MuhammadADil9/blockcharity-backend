@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Optional
 from sqlalchemy.orm import Session
-from core.database import SessionLocal
+from config.database import SessionLocal
 from repositories.campaign_repo import CampaignRepository
 import logging
 

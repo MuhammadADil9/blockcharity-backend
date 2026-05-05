@@ -31,6 +31,14 @@ def get_campaigns(filter: str = Query("all", description="all | active | finishe
     # Return all campaigns for "all"
     return query.all()
 
+@router.get("/campaigns/{id}", response_model=CampaignResponse)
+def get_campaign_by_id(id: int, db: Session = Depends(get_db)):
+    """Returns a single campaign by its on-chain ID."""
+    campaign = db.query(Campaign).filter(Campaign.id == id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail=f"Campaign {id} not found")
+    return campaign
+
 @router.post("/campaigns/{address}/create/", response_model=CampaignResponse)
 def create_campaign(address: str, campaign_data: CampaignCreateRequest, db: Session = Depends(get_db)):
     user = db.query(Distributor).filter(Distributor.address == address).first()
