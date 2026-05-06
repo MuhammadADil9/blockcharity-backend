@@ -57,7 +57,7 @@ def get_donor_donations(address: str, db: Session = Depends(get_db)):
         ).first() is not None
 
         result.append(DonorDonationResponse(
-            campaign_id=campaign.id,
+            id=campaign.id,
             title=campaign.title,
             description=campaign.description,
             location=campaign.location,
@@ -66,6 +66,9 @@ def get_donor_donations(address: str, db: Session = Depends(get_db)):
             activity_status=campaign.activity_status,
             distributor_address=campaign.distributor_address,
             amount_donated=int(amount_donated),
+            current_amount=int(campaign.current_amount),
+            milestone_amount=int(campaign.milestone_amount),
+            end_date=campaign.end_date,
             voted=voted
         ))
     return result

@@ -50,11 +50,20 @@ def check_user(address: str = Query(..., description="Wallet address to look up"
 
 @router.post("/registeruser")
 def register_user(user_in: UserRegisterRequest, db: Session = Depends(get_db)):
-    # Check if already exists in either table
-    if db.query(Donor).filter(Donor.address == user_in.walletAddress).first():
-        raise HTTPException(status_code=400, detail="User already registered")
-    if db.query(Distributor).filter(Distributor.address == user_in.walletAddress).first():
-        raise HTTPException(status_code=400, detail="User already registered")
+    # Wallet address uniqueness
+    if db.query(Donor).filter(Donor.address == user_in.walletAddress).first() or \
+       db.query(Distributor).filter(Distributor.address == user_in.walletAddress).first():
+        raise HTTPException(status_code=400, detail="Wallet address already registered")
+
+    # Email uniqueness across both tables
+    if db.query(Donor).filter(Donor.email == user_in.email).first() or \
+       db.query(Distributor).filter(Distributor.email == user_in.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Phone uniqueness across both tables
+    if db.query(Donor).filter(Donor.phone == user_in.phone).first() or \
+       db.query(Distributor).filter(Distributor.phone == user_in.phone).first():
+        raise HTTPException(status_code=400, detail="Phone number already registered")
 
     if user_in.role == "distributor":
         new_user = Distributor(

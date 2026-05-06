@@ -106,7 +106,7 @@ class CampaignResponse(BaseModel):
 
 
 class DonorDonationResponse(BaseModel):
-    campaign_id: int
+    id: int
     title: str
     description: str
     location: Optional[str] = None
@@ -115,6 +115,10 @@ class DonorDonationResponse(BaseModel):
     activity_status: int
     distributor_address: str
     amount_donated: int
+    current_amount: int
+    milestone_amount: int
+    end_date: Optional[datetime] = None
+    voted: bool = False
 
     class Config:
         from_attributes = True
