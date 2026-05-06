@@ -8,3 +8,5 @@ class SyncState(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
     last_processed_block: Mapped[int] = mapped_column(Integer, default=0)
+
+

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from enum import IntEnum
 
@@ -74,6 +74,14 @@ class CampaignCreateRequest(BaseModel):
     class Config:
         from_attributes = True
 
+class ProofResponse(BaseModel):
+    ipfs_hash: str
+    timestamp: datetime
+    uploaded_by: str
+
+    class Config:
+        from_attributes = True
+
 class CampaignResponse(BaseModel):
     id: int
     title: str
@@ -86,6 +94,27 @@ class CampaignResponse(BaseModel):
     end_date: Optional[datetime] = None
     distributor_address: str
     category_name: Optional[str] = None
-    
+    proofs: List[ProofResponse] = []
+    is_donor: bool = False
+    voted: bool = False
+    positive_votes: int = 0
+    negative_votes: int = 0
+    total_donors: int = 0
+
+    class Config:
+        from_attributes = True
+
+
+class DonorDonationResponse(BaseModel):
+    campaign_id: int
+    title: str
+    description: str
+    location: Optional[str] = None
+    category_name: Optional[str] = None
+    status: int
+    activity_status: int
+    distributor_address: str
+    amount_donated: int
+
     class Config:
         from_attributes = True

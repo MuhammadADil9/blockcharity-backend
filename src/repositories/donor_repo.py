@@ -69,3 +69,10 @@ class DonorRepository(BaseRepository[Donor]):
             new_total = donor.total_donated_wei + amount_wei
             return self.update(address, total_donated_wei=new_total)
         return None
+
+    def decrement_total_donated(self, address: str, amount_wei: int) -> Optional[Donor]:
+        donor = self.get(address)
+        if donor:
+            new_total = max(0, donor.total_donated_wei - amount_wei)
+            return self.update(address, total_donated_wei=new_total)
+        return None

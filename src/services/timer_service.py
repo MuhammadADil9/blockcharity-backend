@@ -4,6 +4,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from config.database import SessionLocal
 from repositories.campaign_repo import CampaignRepository
+from models.campaign import Campaign
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,12 +29,12 @@ class TimerService:
         finally:
             db.close()
 
-    def schedule_voting_deadline(self, campaign_id: int, hours: int = 24) -> None:
+    def schedule_voting_deadline(self, campaign_id: int, hours: int = 0, minutes: int = 0) -> None:
         """Store deadline in DB when proof is uploaded."""
         db = SessionLocal()
         try:
             repo = CampaignRepository(db)
-            deadline = datetime.utcnow() + timedelta(hours=hours)
+            deadline = datetime.utcnow() + timedelta(hours=hours, minutes=minutes)
             repo.update(campaign_id, voting_deadline=deadline)
             logger.info(f"Voting deadline set for campaign {campaign_id} at {deadline}")
         finally:

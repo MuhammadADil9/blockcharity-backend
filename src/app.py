@@ -16,6 +16,7 @@ from models.sync_state import SyncState
 
 from api.routers import users, campaigns, profile, rankings, analytics
 from listeners.websocket_listener import listen_to_contract_events
+from services.timer_service import TimerService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,9 +28,18 @@ async def lifespan(app: FastAPI):
     # Startup: launch the blockchain event listener as a background task
     logger.info("Starting blockchain event listener...")
     listener_task = asyncio.create_task(listen_to_contract_events())
+    
+    # Startup: launch the timer service
+    logger.info("Starting TimerService...")
+    timer_service = TimerService()
+    await timer_service.start()
+    
     yield
     # Shutdown: cancel the listener
     listener_task.cancel()
+    # Shutdown: stop timer service
+    timer_service.running = False
+    
     try:
         await listener_task
     except asyncio.CancelledError:

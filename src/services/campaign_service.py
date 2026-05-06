@@ -175,11 +175,11 @@ class CampaignService:
         self._start_voting_timer(campaign_id)
 
     def _start_voting_timer(self, campaign_id: int) -> None:
-        """Schedule triggerResult after 24h."""
+        """Schedule triggerResult after 10m."""
         from services.timer_service import TimerService
         timer = TimerService()
-        timer.schedule_voting_deadline(campaign_id, hours=24)
-        logger.info(f"Scheduled voting deadline for campaign {campaign_id} in 24h")
+        timer.schedule_voting_deadline(campaign_id, minutes=10)
+        logger.info(f"Scheduled voting deadline for campaign {campaign_id} in 10m")
 
     def process_vote_cast(
         self,
@@ -240,13 +240,40 @@ class CampaignService:
     def process_campaign_cancelled(self, campaign_id: int, reason: str = "Cancelled") -> None:
         """Called by CampaignCancelled event handler."""
         campaign = self.campaign_repo.update_status(campaign_id, 2)  # canceled
-        if campaign:
-            self.campaign_repo.update_activity_status(campaign_id, 4)  # result
-            # Clear active campaign from distributor
-            dist_addr = campaign.distributor_address
-            self.distributor_repo.set_active_campaign(dist_addr, None)
-            # If cancelled due to fraud, distributor might be banned; that will be handled separately.
-            logger.info(f"Campaign {campaign_id} cancelled: {reason}")
+        if not campaign:
+            logger.error(f"Campaign {campaign_id} not found for cancellation")
+            return
+
+        self.campaign_repo.update_activity_status(campaign_id, 4)  # result
+        
+        # Clear active campaign from distributor
+        dist_addr = campaign.distributor_address
+        self.distributor_repo.set_active_campaign(dist_addr, None)
+
+        if reason == "Cancelled by distributor":
+            # Zero out donations and update donor totals
+            # We'll fetch all donations for this campaign
+            donations = self.donation_repo.get_by_campaign(campaign_id, limit=5000)
+            
+            # Avoid circular imports by importing inside method
+            from services.donor_service import DonorService
+            donor_service = DonorService(self.db)
+            
+            for donation in donations:
+                if donation.amount > 0:
+                    # Decrement donor's total_donated_wei
+                    donor_service.decrement_total_donated(donation.donor_address, int(donation.amount))
+                    # Update donation amount to 0 in DB
+                    self.donation_repo.update(donation.id, amount=0)
+            
+            logger.info(f"Campaign {campaign_id} cancelled by distributor. {len(donations)} donations zeroed out.")
+
+        elif reason == "Cancelled by Admin - Fraud/Failure":
+            # Mark distributor as banned
+            self.distributor_repo.set_banned(dist_addr, True)
+            logger.info(f"Campaign {campaign_id} cancelled by admin. Distributor {dist_addr} banned.")
+        
+        logger.info(f"Processed CampaignCancelled: {campaign_id}, reason: {reason}")
 
     def force_cancel_no_proof(self, campaign_id: int) -> None:
         """

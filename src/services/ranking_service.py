@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, case
 from models.distributor import Distributor
 from models.campaign import Campaign
 from models.donor import Donor
@@ -24,7 +24,9 @@ class RankingService:
                 Distributor.address,
                 Distributor.first_name,
                 Distributor.last_name,
-                Distributor.successful_campaign_count,
+                func.coalesce(
+                    func.sum(case((Campaign.status == 1, 1), else_=0)), 0
+                ).label("successful_campaign_count"),
                 func.coalesce(func.sum(Campaign.current_amount), 0).label("total_raised"),
             )
             .outerjoin(Campaign, Campaign.distributor_address == Distributor.address)
@@ -33,10 +35,9 @@ class RankingService:
                 Distributor.address,
                 Distributor.first_name,
                 Distributor.last_name,
-                Distributor.successful_campaign_count,
             )
             .order_by(
-                desc(Distributor.successful_campaign_count),
+                desc("successful_campaign_count"),
                 desc("total_raised"),
             )
             .limit(limit)

@@ -41,6 +41,7 @@ EVENT_HANDLERS = {
     "CampaignCancelled": campaign_handler.handle_campaign_cancelled,
     "RefundIssued": donation_handler.handle_refund_issued,
     "SecurityRefundIssued": donation_handler.handle_security_refund,
+    "FundsWithdrawn": campaign_handler.handle_funds_withdrawn,
 }
 
 

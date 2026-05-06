@@ -84,8 +84,12 @@ class AnalyticsService:
         if not donor:
             return None
 
-        # Total donated (from donor model — already tracked)
-        total_donated = int(donor.total_donated_wei)
+        # Total donated (summed from donations table)
+        total_donated = int(
+            self.db.query(func.coalesce(func.sum(Donation.amount), 0))
+            .filter(Donation.donor_address == address)
+            .scalar()
+        )
 
         # Campaigns supported
         campaigns_supported = (

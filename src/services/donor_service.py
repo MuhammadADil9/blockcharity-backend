@@ -42,6 +42,12 @@ class DonorService:
             self.create_or_update_donor(address)
             self.donor_repo.increment_total_donated(address, amount_wei)
 
+    def decrement_total_donated(self, address: str, amount_wei: int) -> None:
+        """Decrease donation amount from donor's total donated (called from campaign cancellation)."""
+        donor = self.donor_repo.decrement_total_donated(address, amount_wei)
+        if donor:
+            logger.info(f"Donor {address} total donated decreased by {amount_wei}")
+
     def get_donor(self, address: str):
         return self.donor_repo.get_by_address(address)
 

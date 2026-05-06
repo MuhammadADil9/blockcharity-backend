@@ -34,4 +34,9 @@ class Settings:
     OWNER_ADDRESS: str = os.getenv("OWNER_ADDRESS", "")
     OWNER_PRIVATE_KEY: str = os.getenv("OWNER_PRIVATE_KEY", "")
 
+    # IPFS (Pinata)
+    PINATA_API_KEY: str = os.getenv("PINATA_API_KEY", "")
+    PINATA_API_SECRET: str = os.getenv("PINATA_API_SECRET", "")
+    PINATA_JWT: str = os.getenv("PINATA_JWT", "")
+
 settings = Settings()

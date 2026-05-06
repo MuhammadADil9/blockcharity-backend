@@ -11,7 +11,7 @@ async def handle_vote_cast(args, receipt):
         # Adjust argument names based on your contract's VoteCast event
         campaign_id = args['campaignId']  # or 'id'
         voter = args['voter']
-        vote_value = args['voteValue']   # True = positive/approve, False = negative/reject
+        vote_value = args['vote']   # True = positive/approve, False = negative/reject
         tx_hash = receipt['transactionHash'].hex()
 
         service = CampaignService(db)
