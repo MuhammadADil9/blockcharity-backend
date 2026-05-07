@@ -6,7 +6,7 @@ from models.campaign import Campaign
 from models.distributor import Distributor
 from models.donation import Donation
 from models.donor import Donor
-from schemas.user import CampaignCreateRequest, CampaignResponse, DonorDonationResponse, CATEGORY_LABELS, CampaignCategory
+from schemas.user import CampaignCreateRequest, CampaignResponse, DonorDonationResponse
 from config.database import get_db
 from services.ipfs_service import IPFSService
 
@@ -133,8 +133,6 @@ def create_campaign(address: str, campaign_data: CampaignCreateRequest, db: Sess
     if not user:
         raise HTTPException(status_code=404, detail="Distributor not found")
 
-    category_label = CATEGORY_LABELS.get(CampaignCategory(campaign_data.category), "Unknown")
-
     db_campaign = db.query(Campaign).filter(Campaign.id == campaign_data.id).first()
     if db_campaign:
         db_campaign.title = campaign_data.title
@@ -142,7 +140,7 @@ def create_campaign(address: str, campaign_data: CampaignCreateRequest, db: Sess
         db_campaign.location = campaign_data.location
         db_campaign.end_date = campaign_data.endDate
         db_campaign.milestone_amount = int(campaign_data.milestone)
-        db_campaign.category_name = category_label
+        db_campaign.category_name = campaign_data.category
     else:
         db_campaign = Campaign(
             id=campaign_data.id,
@@ -152,7 +150,7 @@ def create_campaign(address: str, campaign_data: CampaignCreateRequest, db: Sess
             location=campaign_data.location,
             end_date=campaign_data.endDate,
             milestone_amount=int(campaign_data.milestone),
-            category_name=category_label,
+            category_name=campaign_data.category,
             current_amount=0,
             status=0,
             activity_status=0,

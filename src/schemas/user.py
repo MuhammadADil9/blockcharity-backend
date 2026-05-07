@@ -69,7 +69,7 @@ class CampaignCreateRequest(BaseModel):
     location: str
     endDate: datetime
     milestone: str
-    category: int = 0  # 0=weatherCrisis, 1=shelter, 2=food
+    category: str = "Weather Crisis"
 
     class Config:
         from_attributes = True
