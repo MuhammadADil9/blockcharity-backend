@@ -17,3 +17,10 @@ class DonorAnalyticsResponse(BaseModel):
     campaigns_supported: int
     total_votes_cast: int
     avg_donation: str  # Wei as string
+
+
+class PlatformAnalyticsResponse(BaseModel):
+    total_raised: str  # Wei as string
+    total_campaigns: int
+    total_donors: int
+    total_distributors: int

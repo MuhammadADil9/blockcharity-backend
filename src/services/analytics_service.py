@@ -116,3 +116,36 @@ class AnalyticsService:
             "total_votes_cast": total_votes_cast,
             "avg_donation": str(avg_donation),
         }
+
+
+    def get_platform_analytics(self) -> Dict[str, Any]:
+        """Aggregate global platform-wide analytics."""
+
+        # 1. Amount raised across total campaigns
+        total_raised = int(
+            self.db.query(func.coalesce(func.sum(Campaign.current_amount), 0)).scalar()
+        )
+
+        # 2. Total number of campaigns (active + completed, status != 2)
+        total_campaigns = (
+            self.db.query(func.count(Campaign.id))
+            .filter(Campaign.status != 2)
+            .scalar()
+        ) or 0
+
+        # 3. Number of donors
+        total_donors = self.db.query(func.count(Donor.address)).scalar() or 0
+
+        # 4. Number of distributors (excluding banned)
+        total_distributors = (
+            self.db.query(func.count(Distributor.address))
+            .filter(Distributor.is_banned == False)
+            .scalar()
+        ) or 0
+
+        return {
+            "total_raised": str(total_raised),
+            "total_campaigns": total_campaigns,
+            "total_donors": total_donors,
+            "total_distributors": total_distributors
+        }
