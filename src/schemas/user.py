@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from datetime import datetime
 from enum import IntEnum
@@ -93,13 +93,18 @@ class CampaignResponse(BaseModel):
     activity_status: int
     end_date: Optional[datetime] = None
     distributor_address: str
-    category_name: Optional[str] = None
+    category_name: str = ""
     proofs: List[ProofResponse] = []
     is_donor: bool = False
     voted: bool = False
     positive_votes: int = 0
     negative_votes: int = 0
     total_donors: int = 0
+
+    @field_validator("category_name", mode="before")
+    @classmethod
+    def coerce_none_category(cls, v):
+        return v if v is not None else ""
 
     class Config:
         from_attributes = True
