@@ -11,6 +11,7 @@ async def handle_campaign_created(args, receipt):
         campaign_id = args['id']  # adjust key name based on your event args
         distributor = args['distributor']
         milestone = args['milestone']
+        security_deposit = args['securityDeposit']  # unpacked but not stored
         category = args.get('category', {}).get('name')  # if category is a struct
         tx_hash = receipt['transactionHash'].hex()
 

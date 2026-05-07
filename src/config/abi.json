@@ -112,13 +112,6 @@
     },
     {
         "type": "function",
-        "name": "depositToContract",
-        "inputs": [],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
         "name": "donate",
         "inputs": [
             {
@@ -149,7 +142,7 @@
             {
                 "name": "",
                 "type": "tuple",
-                "internalType": "struct CharityPlatform.CampaignView",
+                "internalType": "struct CampaignView",
                 "components": [
                     {
                         "name": "id",
@@ -308,7 +301,7 @@
             {
                 "name": "",
                 "type": "tuple[]",
-                "internalType": "struct CharityPlatform.CampaignView[]",
+                "internalType": "struct CampaignView[]",
                 "components": [
                     {
                         "name": "id",
@@ -389,7 +382,7 @@
             {
                 "name": "",
                 "type": "tuple[]",
-                "internalType": "struct CharityPlatform.CampaignView[]",
+                "internalType": "struct CampaignView[]",
                 "components": [
                     {
                         "name": "id",
@@ -475,7 +468,7 @@
             {
                 "name": "",
                 "type": "tuple",
-                "internalType": "struct CharityPlatform.UserInteraction",
+                "internalType": "struct UserInteraction",
                 "components": [
                     {
                         "name": "donatedAmount",
@@ -505,25 +498,6 @@
     {
         "type": "function",
         "name": "isBanned",
-        "inputs": [
-            {
-                "name": "",
-                "type": "address",
-                "internalType": "address"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool",
-                "internalType": "bool"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "isDepositor",
         "inputs": [
             {
                 "name": "",
@@ -648,13 +622,6 @@
         "stateMutability": "nonpayable"
     },
     {
-        "type": "function",
-        "name": "withdrawSecurity",
-        "inputs": [],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
         "type": "event",
         "name": "CampaignCancelled",
         "inputs": [
@@ -719,22 +686,9 @@
                 "type": "uint256",
                 "indexed": false,
                 "internalType": "uint256"
-            }
-        ],
-        "anonymous": false
-    },
-    {
-        "type": "event",
-        "name": "DepositMade",
-        "inputs": [
-            {
-                "name": "distributor",
-                "type": "address",
-                "indexed": true,
-                "internalType": "address"
             },
             {
-                "name": "amount",
+                "name": "securityDeposit",
                 "type": "uint256",
                 "indexed": false,
                 "internalType": "uint256"
@@ -845,10 +799,16 @@
     },
     {
         "type": "event",
-        "name": "SecurityRefundIssued",
+        "name": "SecurityDepositReturned",
         "inputs": [
             {
-                "name": "donor",
+                "name": "campaignId",
+                "type": "uint256",
+                "indexed": true,
+                "internalType": "uint256"
+            },
+            {
+                "name": "distributor",
                 "type": "address",
                 "indexed": true,
                 "internalType": "address"
@@ -864,10 +824,10 @@
     },
     {
         "type": "event",
-        "name": "SecurityWithdrawn",
+        "name": "SecurityRefundIssued",
         "inputs": [
             {
-                "name": "distributor",
+                "name": "donor",
                 "type": "address",
                 "indexed": true,
                 "internalType": "address"
