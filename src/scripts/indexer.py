@@ -2,17 +2,16 @@ import json
 import time
 from web3 import Web3
 from sqlalchemy.orm import Session
+from src.config.config import settings
 from src.config.database import SessionLocal, engine
 from src.models import models
 
-ANVIL_URL = "http://127.0.0.1:8545"
-w3 = Web3(Web3.HTTPProvider(ANVIL_URL))
-CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+w3 = Web3(Web3.HTTPProvider(settings.HTTP_RPC_URL))
 
-with open("src/config/abi.json", "r") as f:
+with open(settings.ABI_PATH, "r") as f:
     CONTRACT_ABI = json.load(f)
 
-contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=CONTRACT_ABI)
+contract = w3.eth.contract(address=settings.CONTRACT_ADDRESS, abi=CONTRACT_ABI)
 
 def get_db():
     db = SessionLocal()
@@ -128,7 +127,7 @@ def sync_events():
 if __name__ == "__main__":
     print("--- Blockchain Indexer Started ---")
     if w3.is_connected():
-        print(f"Connected to Anvil at {ANVIL_URL}")
+        print(f"Connected to Anvil at {settings.HTTP_RPC_URL}")
     else:
         print("Error: Could not connect to Anvil.")
     

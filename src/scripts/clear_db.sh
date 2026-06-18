@@ -1,16 +1,26 @@
 #!/bin/bash
 
-# Database configuration
-DB_NAME="dapp_db"
-DB_USER="postgres"
-DB_PASS="lenovoubuntuu"
+# Database configuration — read from environment or .env file
+# Usage: source ../src/.env && bash clear_db.sh
 
-echo "--- Clearing Database Logic ---"
+if [ -z "$DATABASE_URL" ]; then
+    echo "Error: DATABASE_URL is not set. Source your .env file first:"
+    echo "  source src/.env && bash src/scripts/clear_db.sh"
+    exit 1
+fi
+
+# Parse DATABASE_URL: postgresql://user:pass@host/dbname
+DB_USER=$(echo "$DATABASE_URL" | sed -n 's|.*://\([^:]*\):.*|\1|p')
+DB_PASS=$(echo "$DATABASE_URL" | sed -n 's|.*://[^:]*:\([^@]*\)@.*|\1|p')
+DB_HOST=$(echo "$DATABASE_URL" | sed -n 's|.*@\([^/]*\)/.*|\1|p')
+DB_NAME=$(echo "$DATABASE_URL" | sed -n 's|.*/\([^?]*\).*|\1|p')
+
+echo "--- Clearing Database: $DB_NAME @ $DB_HOST ---"
 
 # We use PGPASSWORD to avoid interactive prompt
 export PGPASSWORD=$DB_PASS
 
-psql -U $DB_USER -d $DB_NAME -c "
+psql -U $DB_USER -h $DB_HOST -d $DB_NAME -c "
 BEGIN;
 DELETE FROM votes;
 DELETE FROM proofs;

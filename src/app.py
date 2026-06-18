@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+from config.config import settings
 from config.database import engine, Base
 # Import all models so their tables are registered with Base
 from models.donor import Donor
@@ -18,7 +19,7 @@ from api.routers import users, campaigns, profile, rankings, analytics
 from listeners.websocket_listener import listen_to_contract_events
 from services.timer_service import TimerService
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG if settings.DEBUG else logging.INFO)
 logger = logging.getLogger(__name__)
 
 Base.metadata.create_all(bind=engine)
@@ -49,7 +50,7 @@ app = FastAPI(title="Charity Dapp", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -26,7 +26,7 @@ class BlockchainService:
         """Build, sign, send a transaction and return (tx_hash_hex, receipt)."""
         tx = function_call.build_transaction({
             'from': self.owner_address,
-            'gas': 500000,
+            'gas': settings.GAS_LIMIT,
             'gasPrice': self.w3.eth.gas_price,
             'nonce': self.w3.eth.get_transaction_count(self.owner_address),
         })
