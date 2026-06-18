@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import String, Integer, DateTime, Numeric
+from sqlalchemy import String, Integer, DateTime, Numeric, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from config.database import Base
@@ -15,7 +15,7 @@ class Donor(Base):
     email: Mapped[Optional[str]] = mapped_column(String, unique=True, index=True, nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     location: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    profile_pic: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    profile_pic: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Role-specific fields
     total_donated_wei: Mapped[int] = mapped_column(Numeric(78, 0), default=0)

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey
+from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from config.database import Base
@@ -15,7 +15,7 @@ class Distributor(Base):
     email: Mapped[Optional[str]] = mapped_column(String, unique=True, index=True, nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     location: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    profile_pic: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    profile_pic: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Role-specific fields
     successful_campaign_count: Mapped[int] = mapped_column(Integer, default=0)

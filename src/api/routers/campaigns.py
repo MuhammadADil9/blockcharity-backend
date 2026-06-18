@@ -41,15 +41,17 @@ def get_donor_donations(address: str, db: Session = Depends(get_db)):
         db.query(
             Campaign,
             func.sum(Donation.amount).label("amount_donated"),
+            Distributor.profile_pic.label("distributor_profile_pic")
         )
         .join(Donation, Donation.campaign_id == Campaign.id)
+        .outerjoin(Distributor, Campaign.distributor_address == Distributor.address)
         .filter(Donation.donor_address == address)
-        .group_by(Campaign.id)
+        .group_by(Campaign.id, Distributor.profile_pic)
         .all()
     )
 
     result = []
-    for campaign, amount_donated in rows:
+    for campaign, amount_donated, profile_pic in rows:
         # Check if donor has voted for this campaign
         voted = db.query(Vote).filter(
             Vote.campaign_id == campaign.id,
@@ -69,18 +71,25 @@ def get_donor_donations(address: str, db: Session = Depends(get_db)):
             current_amount=int(campaign.current_amount),
             milestone_amount=int(campaign.milestone_amount),
             end_date=campaign.end_date,
-            voted=voted
+            voted=voted,
+            distributor_profile_pic=profile_pic
         ))
     return result
 
 @router.get("/distributor/{address}/active-campaign", response_model=Optional[CampaignResponse])
 def get_active_campaign(address: str, db: Session = Depends(get_db)):
     """Returns the currently active campaign for a distributor, or null."""
-    campaign = db.query(Campaign).filter(
+    result = db.query(Campaign, Distributor.profile_pic.label("distributor_profile_pic")).outerjoin(
+        Distributor, Campaign.distributor_address == Distributor.address
+    ).filter(
         Campaign.distributor_address == address,
         Campaign.status == 0
     ).first()
-    return campaign
+    if result:
+        campaign, pic = result
+        campaign.distributor_profile_pic = pic
+        return campaign
+    return None
 
 @router.get("/distributor/{address}/campaigns", response_model=List[CampaignResponse])
 def get_distributor_campaigns_all(address: str, db: Session = Depends(get_db)):
@@ -88,26 +97,45 @@ def get_distributor_campaigns_all(address: str, db: Session = Depends(get_db)):
     distributor = db.query(Distributor).filter(Distributor.address == address).first()
     if not distributor:
         raise HTTPException(status_code=404, detail="Distributor not found")
-    return db.query(Campaign).filter(Campaign.distributor_address == address).all()
+    results = db.query(Campaign, Distributor.profile_pic.label("distributor_profile_pic")).outerjoin(
+        Distributor, Campaign.distributor_address == Distributor.address
+    ).filter(Campaign.distributor_address == address).all()
+    campaigns = []
+    for c, pic in results:
+        c.distributor_profile_pic = pic
+        campaigns.append(c)
+    return campaigns
 
 @router.get("/campaigns", response_model=List[CampaignResponse])
 def get_campaigns(filter: str = Query("all", description="all | active | finished"), db: Session = Depends(get_db)):
     """Returns campaigns based on the specified filter."""
-    query = db.query(Campaign)
+    query = db.query(Campaign, Distributor.profile_pic.label("distributor_profile_pic")).outerjoin(
+        Distributor, Campaign.distributor_address == Distributor.address
+    )
 
     if filter == "active":
         query = query.filter(Campaign.status == 0)
     elif filter == "finished":
         query = query.filter(Campaign.status.in_([1, 2]))
 
-    return query.all()
+    results = query.all()
+    campaigns = []
+    for c, pic in results:
+        c.distributor_profile_pic = pic
+        campaigns.append(c)
+    return campaigns
 
 @router.get("/campaigns/{id}", response_model=CampaignResponse)
 def get_campaign_by_id(id: int, user_address: Optional[str] = Query(None), db: Session = Depends(get_db)):
     """Returns a single campaign by its on-chain ID, with optional user-specific info."""
-    campaign = db.query(Campaign).filter(Campaign.id == id).first()
-    if not campaign:
+    result = db.query(Campaign, Distributor.profile_pic.label("distributor_profile_pic")).outerjoin(
+        Distributor, Campaign.distributor_address == Distributor.address
+    ).filter(Campaign.id == id).first()
+    if not result:
         raise HTTPException(status_code=404, detail=f"Campaign {id} not found")
+    
+    campaign, pic = result
+    campaign.distributor_profile_pic = pic
     
     # Total distinct donors for this campaign
     campaign.total_donors = db.query(func.count(func.distinct(Donation.donor_address))) \
@@ -163,8 +191,16 @@ def create_campaign(address: str, campaign_data: CampaignCreateRequest, db: Sess
 
     db.commit()
     db.refresh(db_campaign)
+    db_campaign.distributor_profile_pic = user.profile_pic
     return db_campaign
 
 @router.get("/campaigns/{address}/list/", response_model=List[CampaignResponse])
 def get_distributor_campaigns(address: str, db: Session = Depends(get_db)):
-    return db.query(Campaign).filter(Campaign.distributor_address == address).all()
+    results = db.query(Campaign, Distributor.profile_pic.label("distributor_profile_pic")).outerjoin(
+        Distributor, Campaign.distributor_address == Distributor.address
+    ).filter(Campaign.distributor_address == address).all()
+    campaigns = []
+    for c, pic in results:
+        c.distributor_profile_pic = pic
+        campaigns.append(c)
+    return campaigns

@@ -24,6 +24,7 @@ class RankingService:
                 Distributor.address,
                 Distributor.first_name,
                 Distributor.last_name,
+                Distributor.profile_pic,
                 func.coalesce(
                     func.sum(case((Campaign.status == 1, 1), else_=0)), 0
                 ).label("successful_campaign_count"),
@@ -35,6 +36,7 @@ class RankingService:
                 Distributor.address,
                 Distributor.first_name,
                 Distributor.last_name,
+                Distributor.profile_pic,
             )
             .order_by(
                 desc("successful_campaign_count"),
@@ -53,6 +55,7 @@ class RankingService:
                 "name": name,
                 "successful_campaign_count": row.successful_campaign_count,
                 "total_raised": str(int(row.total_raised)),
+                "profile_pic": row.profile_pic,
             })
 
         return rankings
@@ -67,6 +70,7 @@ class RankingService:
                 Donor.address,
                 Donor.first_name,
                 Donor.last_name,
+                Donor.profile_pic,
                 func.coalesce(func.sum(Donation.amount), 0).label("total_donated"),
                 func.count(func.distinct(Donation.campaign_id)).label("campaigns_supported"),
             )
@@ -75,6 +79,7 @@ class RankingService:
                 Donor.address,
                 Donor.first_name,
                 Donor.last_name,
+                Donor.profile_pic,
             )
             .order_by(
                 desc("total_donated"),
@@ -93,6 +98,7 @@ class RankingService:
                 "name": name,
                 "total_donated": str(int(row.total_donated)),
                 "campaigns_supported": row.campaigns_supported,
+                "profile_pic": row.profile_pic,
             })
 
         return rankings

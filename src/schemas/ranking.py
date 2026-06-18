@@ -8,6 +8,7 @@ class DistributorRankingItem(BaseModel):
     name: str
     successful_campaign_count: int
     total_raised: str  # Wei as string to avoid JS precision loss
+    profile_pic: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -19,6 +20,7 @@ class DonorRankingItem(BaseModel):
     name: str
     total_donated: str  # Wei as string
     campaigns_supported: int
+    profile_pic: Optional[str] = None
 
     class Config:
         from_attributes = True

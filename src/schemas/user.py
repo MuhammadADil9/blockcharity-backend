@@ -93,6 +93,7 @@ class CampaignResponse(BaseModel):
     activity_status: int
     end_date: Optional[datetime] = None
     distributor_address: str
+    distributor_profile_pic: Optional[str] = None
     category_name: str = ""
     proofs: List[ProofResponse] = []
     is_donor: bool = False
@@ -119,6 +120,7 @@ class DonorDonationResponse(BaseModel):
     status: int
     activity_status: int
     distributor_address: str
+    distributor_profile_pic: Optional[str] = None
     amount_donated: int
     current_amount: int
     milestone_amount: int
