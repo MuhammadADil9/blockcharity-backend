@@ -16,7 +16,7 @@ from models.lottery_winner import LotteryWinner
 from models.sync_state import SyncState
 from models.notification import Notification
 
-from api.routers import users, campaigns, profile, rankings, analytics, notifications
+from api.routers import users, campaigns, profile, rankings, analytics, notifications, chat
 from listeners.websocket_listener import listen_to_contract_events
 from services.timer_service import TimerService
 
@@ -63,6 +63,7 @@ app.include_router(profile.router)
 app.include_router(rankings.router)
 app.include_router(analytics.router)
 app.include_router(notifications.router)
+app.include_router(chat.router)
 
 @app.get("/")
 def read_root():

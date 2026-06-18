@@ -1,0 +1,374 @@
+[
+{
+"instruction": "How can I find campaigns to donate to on BloCharity?",
+"output": "On your donor dashboard, you can browse all campaigns that are currently in the InFunding phase. Each campaign shows its title, description, category, location, end date, and milestone amount. Simply click on any campaign that interests you and proceed to donate using your MetaMask wallet."
+},
+{
+"instruction": "What do I need to do before I can donate to a campaign?",
+"output": "You must connect your MetaMask wallet to the BloCharity platform and ensure you have sufficient USDT balance. Once connected, navigate to the active campaigns section and choose a campaign in the InFunding phase to make your donation."
+},
+{
+"instruction": "Can I vote on any campaign I want?",
+"output": "No, you can only vote on campaigns that you personally donated to. Once a campaign moves to the Voting phase, eligible donors see Positive and Negative vote options on their dashboard. Each donor can vote only once per campaign."
+},
+{
+"instruction": "How do I see how much I've donated in total?",
+"output": "Your donor dashboard includes a personal analytics section that shows the total amount you have donated across all campaigns. You can also see a list of campaigns you have contributed to and the amount for each."
+},
+{
+"instruction": "Is there a leaderboard for donors?",
+"output": "Yes, BloCharity provides a ranking dashboard that shows top donors based on their total donation amounts. You can view this ranking to see how you compare with other donors on the platform."
+},
+{
+"instruction": "What is the lottery system for donors?",
+"output": "Donors can participate in and fund a lottery system that is designed to incentivize Distributors. The exact mechanics are part of the platform's donor capabilities, allowing you to engage beyond standard donations."
+},
+{
+"instruction": "How long do I have to vote on a campaign after proof is uploaded?",
+"output": "The voting window lasts exactly 24 hours after the campaign enters the Voting phase. During this time, eligible donors can cast their Positive or Negative vote by triggering the smart contract's vote method from their dashboard."
+},
+{
+"instruction": "Can I change my vote after I cast it?",
+"output": "No, each donor can only vote once per campaign. Once you trigger the vote method via your MetaMask wallet, your decision is recorded on-chain and cannot be changed or retracted."
+},
+{
+"instruction": "What happens if I try to donate to a campaign that is not in the Funding phase?",
+"output": "The smart contract will reject your donation because campaigns outside the InFunding phase are not open for contributions. Only campaigns with Activity Status 'InFunding' are eligible to receive donations."
+},
+{
+"instruction": "How do I know if my donation was successful?",
+"output": "After you trigger the donate method via MetaMask, you will receive a transaction hash as a receipt. You can view this hash in your wallet or on the blockchain explorer to confirm the transaction was processed."
+},
+{
+"instruction": "What analytics can I see as a donor?",
+"output": "Your donor dashboard shows personal analytics including the list of campaigns you have donated to, the total amount you have donated, and your voting history. You can also access the ranking dashboard to see top donors."
+},
+{
+"instruction": "Do I need to pay gas fees for voting?",
+"output": "Yes, voting requires triggering the smart contract's vote method, which is an on-chain transaction. You will need to confirm the transaction in MetaMask and pay the associated gas fees in ETH or your network's native token."
+},
+{
+"instruction": "Can I see which donors voted on a campaign?",
+"output": "The platform does not explicitly list individual donor votes to maintain privacy. However, the smart contract records vote counts and results, which are visible on-chain after the triggerResult method is called."
+},
+{
+"instruction": "What happens if I donate but the campaign gets cancelled later?",
+"output": "If a campaign is cancelled due to failed proof upload or negative vote results, the Distributor's security deposit is forfeited and redistributed to donors who funded that campaign. You will receive a share of the 25 USDT deposit proportionally."
+},
+{
+"instruction": "How do I connect my wallet to BloCharity?",
+"output": "Click the 'Connect Wallet' button in the top navigation bar of the platform. Your MetaMask extension will pop up, asking you to select an account and confirm the connection. Once connected, you can perform all on-chain actions."
+},
+{
+"instruction": "Is there a minimum donation amount?",
+"output": "The knowledge base does not specify a minimum donation amount. However, you must have sufficient USDT in your connected MetaMask wallet to cover the donation amount you wish to make."
+},
+{
+"instruction": "Can I donate to multiple campaigns at once?",
+"output": "You must donate to each campaign individually by navigating to that campaign's page and triggering the donate method. There is no batch donation feature, but you can make as many separate donations as you like."
+},
+{
+"instruction": "How do I know if a campaign has reached its milestone?",
+"output": "When cumulative donations meet the milestone amount, the smart contract automatically emits a MilestoneAchieved event. The campaign's Activity Status changes to MilestoneAchieved, and you will see this update on the campaign page."
+},
+{
+"instruction": "What happens if no one votes on a campaign?",
+"output": "If total voters is 0 after the 24-hour voting window, the FastAPI backend automatically triggers the triggerResult method. The campaign is then marked as successful, and it moves to Completed status with Activity Status Result."
+},
+{
+"instruction": "Can I see my transaction history on BloCharity?",
+"output": "Your donor dashboard lists the campaigns you have donated to, but for full transaction details including hashes and timestamps, you can check your MetaMask wallet history or search your wallet address on a blockchain explorer."
+},
+{
+"instruction": "What does the 'Positive' vote mean?",
+"output": "A Positive vote indicates that you approve of the proof the Distributor uploaded for the campaign. It counts toward the threshold that determines if the campaign is successful. Negative votes above 30% will cause cancellation."
+},
+{
+"instruction": "How do I report a suspicious campaign?",
+"output": "The knowledge base does not specify a direct reporting mechanism. However, you can choose not to donate, and if you are an eligible voter, you can cast a Negative vote when the campaign reaches the Voting phase."
+},
+{
+"instruction": "How do I become a Distributor on BloCharity?",
+"output": "To become a Distributor, you must first deposit 25 USDT as a security deposit by triggering the depositToContract smart contract method from your connected MetaMask wallet. After the deposit is confirmed, you can create campaigns."
+},
+{
+"instruction": "What is the security deposit for?",
+"output": "The 25 USDT security deposit ensures that Distributors have a financial stake in following the platform rules. It can be reclaimed anytime by withdrawing, but it is forfeited and redistributed to donors if a campaign is cancelled due to failed proof or negative vote results."
+},
+{
+"instruction": "How do I reclaim my security deposit?",
+"output": "On your Distributor dashboard, click the 'Withdraw Security' button. This triggers the withdrawSecurity smart contract method, and the 25 USDT will be returned to your connected MetaMask wallet. You can do this at any time."
+},
+{
+"instruction": "What information do I need to create a campaign?",
+"output": "You must provide a Title, Description, Category, Location, End Date, and the Milestone amount (the fundraising goal in USDT). After filling these in, triggering createCampaign will start the campaign in the InFunding phase."
+},
+{
+"instruction": "When can I withdraw the funds from my campaign?",
+"output": "You can withdraw funds only after the campaign reaches the MilestoneAchieved phase, which happens when cumulative donations meet your specified milestone. At that point, a 'Withdraw Funds' button appears on your dashboard to trigger the withdraw method."
+},
+{
+"instruction": "How do I upload proof after withdrawing funds?",
+"output": "Within 48 hours of withdrawal, go to the campaign UI and upload image or video proof. The files are sent to Pinata (IPFS), and the resulting hash is stored on-chain by triggering the uploadProof smart contract method."
+},
+{
+"instruction": "What happens if I cancel my own campaign?",
+"output": "You can manually cancel your campaign by clicking the 'Cancel Campaign' button, which triggers the cancelCampaign smart contract method. The Campaign Status becomes Cancelled, and Activity Status becomes Result. Your security deposit is forfeited and redistributed to donors."
+},
+{
+"instruction": "Can I create multiple campaigns at the same time?",
+"output": "Yes, as a Distributor you can create multiple campaigns sequentially or simultaneously, provided you have already made the 25 USDT security deposit. Each campaign follows its own lifecycle independently."
+},
+{
+"instruction": "How do I see my total funds raised across campaigns?",
+"output": "Your Distributor dashboard includes personal analytics that show total campaigns completed and total funds raised. This aggregates data from all your campaigns that successfully reached Completed status."
+},
+{
+"instruction": "Is there a leaderboard for Distributors?",
+"output": "Yes, BloCharity provides a ranking dashboard that shows top Distributors based on metrics like total funds raised and successful campaigns completed. You can view this ranking from your dashboard."
+},
+{
+"instruction": "What happens if my campaign fails the voting phase?",
+"output": "If 30% or more of votes are negative, the smart contract cancels the campaign. Your Distributor account is permanently banned, and your 25 USDT security deposit is forfeited and redistributed to the donors who funded the campaign."
+},
+{
+"instruction": "How long do I have to upload proof after withdrawal?",
+"output": "You have exactly 48 hours from the moment you trigger the withdraw method. A countdown timer starts on the campaign UI, and you must upload image/video proof to Pinata and call uploadProof before the timer expires."
+},
+{
+"instruction": "Can I edit a campaign after it's created?",
+"output": "The knowledge base does not indicate any editing capability. Once a campaign is created via createCampaign, its details are likely immutable on-chain. You would need to cancel the campaign and create a new one if changes are required."
+},
+{
+"instruction": "What is the benefit of being a top Distributor?",
+"output": "Top Distributors are featured on the ranking dashboard, which can increase visibility and donor trust. The platform also has a lottery system funded by donors that incentivizes Distributors, though specific rewards are not detailed."
+},
+{
+"instruction": "How do I know if my proof upload was successful?",
+"output": "After triggering uploadProof, the transaction hash serves as confirmation that the IPFS hash is stored on-chain. You will see the campaign Activity Status change from ProofToBeUploaded to Voting once the upload is processed."
+},
+{
+"instruction": "What happens to my campaign if I withdraw my security deposit while a campaign is active?",
+"output": "You can withdraw your security deposit at any time using withdrawSecurity, even if you have active campaigns. However, withdrawing does not affect existing campaigns; they continue their lifecycle. Only new campaign creation requires the deposit to be present."
+},
+{
+"instruction": "What is the first phase of a campaign?",
+"output": "The first phase is Funding, where the Campaign Activity Status is InFunding. The Distributor creates the campaign, and donors can browse and donate USDT via MetaMask until the milestone is reached."
+},
+{
+"instruction": "What triggers the MilestoneAchieved status?",
+"output": "Once cumulative donations from all donors meet or exceed the milestone amount specified by the Distributor, the smart contract automatically emits a MilestoneAchieved event, and the Activity Status changes to MilestoneAchieved."
+},
+{
+"instruction": "What happens after the Distributor withdraws funds?",
+"output": "After the Distributor triggers the withdraw method, the Campaign Activity Status changes to ProofToBeUploaded, and a 48-hour countdown timer starts. The Distributor must upload proof within that window to avoid automatic cancellation."
+},
+{
+"instruction": "How does the campaign move from ProofToBeUploaded to Voting?",
+"output": "When the Distributor uploads image/video proof to Pinata and calls uploadProof to store the IPFS hash on-chain, the smart contract automatically changes the Activity Status to Voting. Eligible donors can then vote for 24 hours."
+},
+{
+"instruction": "What determines if a campaign is successful after voting?",
+"output": "After the 24-hour voting window, the FastAPI backend calls triggerResult. If negative votes are below 30% of total votes, the campaign is marked successful via _successfulCampaignBySmartContract. If negative votes are 30% or higher, it is cancelled."
+},
+{
+"instruction": "What is the final status of a successful campaign?",
+"output": "A successful campaign receives Campaign Status 'Completed' and Activity Status 'Result'. The Distributor keeps the raised funds (minus any fees, not specified) and is not banned. The security deposit remains reclaimable unless forfeited."
+},
+{
+"instruction": "Can a campaign be cancelled during the Funding phase?",
+"output": "Yes, the Distributor can manually cancel their own campaign at any time by clicking 'Cancel Campaign', which triggers cancelCampaign. The campaign becomes Cancelled with Activity Status Result, and the security deposit is redistributed."
+},
+{
+"instruction": "What happens if the milestone is never reached by the end date?",
+"output": "The knowledge base does not specify behavior for end date expiry. The only way to exit Funding phase is by reaching the milestone. You should refer to platform documentation or assume donors can still donate until milestone is met or campaign is manually cancelled."
+},
+{
+"instruction": "How does a donor know when to vote?",
+"output": "Donors who contributed to a campaign receive a notification on their dashboard when the campaign enters the Voting phase. The campaign will show Positive and Negative vote options, and the 24-hour timer is displayed."
+},
+{
+"instruction": "What happens if the 48-hour proof deadline is missed?",
+"output": "If the Distributor fails to upload proof within 48 hours of withdrawal, the FastAPI backend automatically triggers cancelCampaignBySmartContract. The campaign is cancelled, the Distributor is permanently banned, and the security deposit is redistributed to donors."
+},
+{
+"instruction": "Who can vote in the Voting phase?",
+"output": "Only Donors who donated to that specific campaign are eligible to vote. Each eligible donor sees the voting options on their dashboard and can cast one Positive or Negative vote by triggering the smart contract's vote method."
+},
+{
+"instruction": "What is the purpose of the Result phase?",
+"output": "The Result phase finalizes the campaign outcome. The Activity Status becomes Result, and the campaign is marked either Completed (if successful) or Cancelled (if failed). Donors see the final result, and Distributors learn if they are banned."
+},
+{
+"instruction": "How does the smart contract know when to trigger result?",
+"output": "The FastAPI backend automatically triggers the triggerResult method using the platform owner's private key after the 24-hour voting window ends. This method evaluates vote counts and determines success or cancellation on-chain."
+},
+{
+"instruction": "What happens if a campaign receives zero negative votes?",
+"output": "If negative votes are below 30% (including zero), the campaign is successful. The _successfulCampaignBySmartContract method is called, the Campaign Status becomes Completed, and Activity Status becomes Result."
+},
+{
+"instruction": "How is proof stored on BloCharity?",
+"output": "Proof files (images or videos) are uploaded to Pinata, which is an IPFS pinning service. The resulting IPFS hash is then stored on the blockchain via the uploadProof smart contract method, so the proof is decentralized and verifiable."
+},
+{
+"instruction": "Why do I need to use Pinata for proof uploads?",
+"output": "Pinata provides reliable IPFS storage, ensuring that proof files are permanently accessible. Only the hash is stored on-chain to keep gas costs low, while the actual files remain on IPFS for anyone to verify."
+},
+{
+"instruction": "What file types can I upload as proof?",
+"output": "You can upload image or video files as proof for your campaign. The specific allowed formats (e.g., JPG, PNG, MP4) are not detailed in the knowledge base, but the platform UI will accept common media types."
+},
+{
+"instruction": "How do I know the proof is tamper-proof?",
+"output": "The IPFS hash stored on-chain is a cryptographic fingerprint of the file. Anyone can verify that the file on IPFS matches the hash on-chain, ensuring that the proof has not been altered after upload."
+},
+{
+"instruction": "Can donors view the proof files?",
+"output": "Yes, once the Distributor uploads proof and the hash is stored on-chain, donors can view the proof by accessing the campaign page. The platform retrieves the file from IPFS using the stored hash."
+},
+{
+"instruction": "What happens if Pinata goes down?",
+"output": "Because files are stored on IPFS, they are accessible from any IPFS gateway as long as at least one node pins the hash. Pinata is the primary pinning service, but the hash can be retrieved from other IPFS nodes if available."
+},
+{
+"instruction": "Do I need a separate Pinata account to upload proof?",
+"output": "No, the BloCharity platform integrates with Pinata directly. When you upload a file via the campaign UI, the backend handles sending it to Pinata and returning the IPFS hash, which you then submit on-chain via uploadProof."
+},
+{
+"instruction": "Why do I need to connect MetaMask to use BloCharity?",
+"output": "MetaMask is required to sign and send all on-chain transactions, including depositing security, creating campaigns, donating, withdrawing funds, uploading proof, and voting. Your wallet holds your USDT and pays gas fees for smart contract interactions."
+},
+{
+"instruction": "What is a transaction hash and where do I see it?",
+"output": "A transaction hash is a unique identifier for each on-chain transaction. After you confirm any action in MetaMask, BloCharity displays the hash as a receipt. You can use it to track the transaction on a blockchain explorer."
+},
+{
+"instruction": "Which blockchain does BloCharity use?",
+"output": "The knowledge base does not specify a particular blockchain, but it supports MetaMask and uses USDT as the currency. Most likely it runs on a compatible EVM network like Ethereum, BNB Chain, or Polygon."
+},
+{
+"instruction": "What happens if my MetaMask transaction fails?",
+"output": "If a transaction fails on-chain, you should check your wallet balance to ensure you have enough USDT for the transfer and enough native tokens for gas fees. You can then retry the action from the platform dashboard."
+},
+{
+"instruction": "Can I use a wallet other than MetaMask?",
+"output": "The knowledge base specifically mentions MetaMask for wallet connection. While other Web3 wallets might technically work, the platform is designed for MetaMask, and support for other wallets is not documented."
+},
+{
+"instruction": "Do I need to pay gas fees for every action?",
+"output": "Yes, every on-chain action that triggers a smart contract method (depositToContract, createCampaign, donate, withdraw, uploadProof, vote, etc.) requires gas fees in the network's native token. MetaMask will show you the estimated gas before confirmation."
+},
+{
+"instruction": "How do I add USDT to my MetaMask wallet?",
+"output": "You need to acquire USDT from a centralized exchange (like Binance or Coinbase) or a decentralized exchange, then send it to your MetaMask wallet address. Ensure you are using the correct network (e.g., Ethereum, BSC) that BloCharity supports."
+},
+{
+"instruction": "What is the purpose of the smart contract methods?",
+"output": "Smart contract methods enforce all platform rules automatically: they check milestones, manage security deposits, handle voting logic, and trigger results. No central authority can alter these rules, ensuring trust and transparency."
+},
+{
+"instruction": "I see 'Wallet not connected' error. What do I do?",
+"output": "You must connect your MetaMask wallet by clicking the 'Connect Wallet' button in the top navigation. Follow the MetaMask prompts to select your account and approve the connection. After that, all on-chain actions will be available."
+},
+{
+"instruction": "I tried to donate but got 'Insufficient USDT'. Why?",
+"output": "This error means your connected MetaMask wallet does not have enough USDT balance to cover the donation amount you entered. Please add more USDT to your wallet or reduce the donation amount and try again."
+},
+{
+"instruction": "Why can't I donate to a campaign I found?",
+"output": "Check the campaign's Activity Status. Donations are only allowed during the InFunding phase. If the campaign is in MilestoneAchieved, ProofToBeUploaded, Voting, or Result, the donate method will be disabled."
+},
+{
+"instruction": "I'm a Distributor and the 'Withdraw Funds' button is grayed out.",
+"output": "The 'Withdraw Funds' button only becomes active when the campaign's Activity Status is MilestoneAchieved, meaning cumulative donations have reached the milestone. Check the campaign page to see if the milestone amount has been met on-chain."
+},
+{
+"instruction": "I tried to vote but got 'Not eligible to vote'. Why?",
+"output": "You can only vote on campaigns you personally donated to. The smart contract checks your wallet address against the list of donors for that specific campaign. If you did not donate, you are not eligible to vote."
+},
+{
+"instruction": "I accidentally voted Negative but meant Positive. Can I change it?",
+"output": "No, each donor can only vote once per campaign. The vote method records your choice on-chain, and there is no mechanism to change or retract a vote. Please double-check before confirming the transaction in MetaMask."
+},
+{
+"instruction": "What does 'Transaction failed on-chain' mean?",
+"output": "This means the smart contract rejected your transaction, often due to a rule violation (e.g., donating after the milestone, voting twice, or insufficient security deposit). Check the error message and ensure you meet all conditions before retrying."
+},
+{
+"instruction": "I'm a Distributor and I missed the 48-hour deadline. What now?",
+"output": "The FastAPI backend automatically cancels your campaign via cancelCampaignBySmartContract. Your security deposit is forfeited and redistributed to donors, and your Distributor account is permanently banned. You cannot create new campaigns."
+},
+{
+"instruction": "Can I create a campaign without depositing 25 USDT first?",
+"output": "No, the smart contract requires that you have deposited exactly 25 USDT via depositToContract before calling createCampaign. If you attempt to create a campaign without the deposit, the transaction will fail on-chain."
+},
+{
+"instruction": "What happens if I try to withdraw my security deposit while a campaign is in Voting?",
+"output": "You can withdraw your security deposit at any time using withdrawSecurity, even during an active campaign. However, the ongoing campaign continues unaffected. Only new campaign creation is blocked until you deposit again."
+},
+{
+"instruction": "I see 'Campaign not in InFunding' when trying to donate. What does that mean?",
+"output": "The campaign you are trying to donate to is no longer in the Funding phase. It may have already reached its milestone and moved to MilestoneAchieved, or it might be in a later phase like Voting or Result. Donations are only accepted during InFunding."
+},
+{
+"instruction": "My wallet is connected but I still can't vote. Why?",
+"output": "First, ensure you donated to that specific campaign. Second, check that the campaign is in the Voting phase (Activity Status Voting). Third, verify you have not already voted on this campaign. If all are true, refresh the page and try again."
+},
+{
+"instruction": "What happens if I try to upload proof after the 48-hour window?",
+"output": "The uploadProof method will likely be disabled by the smart contract after the deadline. The FastAPI backend would have already triggered automatic cancellation, so your campaign is already cancelled and you are banned."
+},
+{
+"instruction": "Can a Distributor appeal a ban?",
+"output": "The knowledge base does not mention any appeal process. A permanent ban is applied automatically by the smart contract when a campaign is cancelled due to failed proof or negative votes. You cannot create new campaigns or reclaim your deposit."
+},
+{
+"instruction": "What is the condition for a Distributor to be permanently banned?",
+"output": "A Distributor is permanently banned if they fail to upload proof within 48 hours of withdrawing funds, or if a campaign receives 30% or more negative votes during the voting phase. In both cases, the security deposit is forfeited."
+},
+{
+"instruction": "What happens to the security deposit when a Distributor is banned?",
+"output": "The security deposit (25 USDT) is forfeited and redistributed to the Donors who funded the campaign that caused the ban. The redistribution is automatic via the smart contract when the campaign is cancelled."
+},
+{
+"instruction": "Can a banned Distributor ever reclaim their security deposit?",
+"output": "No, once a Distributor is banned due to failed proof or negative votes, the security deposit is automatically forfeited and sent to donors. There is no way to reclaim it after the ban is enforced by the smart contract."
+},
+{
+"instruction": "If I withdraw my security deposit before a campaign fails, do I still get banned?",
+"output": "If you withdraw your security deposit, you simply remove the 25 USDT from the contract. However, if your active campaign later fails (e.g., missed proof deadline or negative votes), you will still be banned, but there is no deposit to forfeit since you already withdrew it."
+},
+{
+"instruction": "How are donors compensated when a Distributor is banned?",
+"output": "The forfeited security deposit of 25 USDT is redistributed automatically by the smart contract to all donors who contributed to the cancelled campaign. The distribution is proportional to each donor's contribution amount."
+},
+{
+"instruction": "Does a Distributor get banned if they manually cancel their own campaign?",
+"output": "No, manual cancellation via cancelCampaign does not result in a ban. However, the security deposit is still forfeited and redistributed to donors. The Distributor can continue creating new campaigns after making a new security deposit."
+},
+{
+"instruction": "What is the difference between cancelCampaign and cancelCampaignBySmartContract?",
+"output": "cancelCampaign is triggered manually by the Distributor from their dashboard. cancelCampaignBySmartContract is triggered automatically by the FastAPI backend when proof is missed or voting fails. Both cancel the campaign, but only the automatic version results in a permanent ban."
+},
+{
+"instruction": "Can a Distributor avoid a ban by withdrawing their deposit before the voting result?",
+"output": "No, the ban is tied to the Distributor's account and campaign failure, not to the deposit status. Even if you withdraw the deposit, failing to upload proof or receiving 30%+ negative votes will still trigger a permanent ban."
+},
+{
+"instruction": "What happens to the security deposit if a campaign is successful?",
+"output": "If the campaign is successful (less than 30% negative votes or zero voters), the Distributor is not banned, and the security deposit remains in the contract. The Distributor can withdraw it at any time via withdrawSecurity."
+},
+{
+"instruction": "Is the security deposit required for every campaign?",
+"output": "The deposit is required per Distributor account, not per campaign. Once you deposit 25 USDT, you can create multiple campaigns. The deposit remains locked until you withdraw it or it is forfeited due to a campaign failure."
+},
+{
+"instruction": "What does 'redistributed to Donors' mean exactly?",
+"output": "When a security deposit is forfeited, the 25 USDT is split among all donors who contributed to the failed campaign. Each donor receives a share proportional to their donation amount relative to the total milestone amount."
+},
+{
+"instruction": "Can a Distributor be banned for multiple campaign failures?",
+"output": "The first failure that results in automatic cancellation (missed proof or 30%+ negative votes) already triggers a permanent ban. Therefore, a Distributor cannot have multiple failures because they are banned after the first one."
+}
+]

@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env file
-load_dotenv()
+# Load .env relative to this file so it works regardless of cwd
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 _CONFIG_DIR = Path(__file__).resolve().parent  # .../src/config/
 
@@ -59,5 +59,9 @@ class Settings:
 
     # Transaction config
     GAS_LIMIT: int = int(os.getenv("GAS_LIMIT", "500000"))
+
+    # OpenAI (chatbot)
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
 settings = Settings()
