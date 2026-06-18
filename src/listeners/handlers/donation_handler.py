@@ -1,6 +1,9 @@
 from config.database import SessionLocal
 from services.campaign_service import CampaignService
 from services.donor_service import DonorService
+from services.notification_service import NotificationService
+from models.notification import NotificationType
+from models.campaign import Campaign
 import logging
 
 logger = logging.getLogger(__name__)
@@ -43,14 +46,23 @@ async def handle_refund_issued(args, receipt):
         campaign_id = args.get('campaignId', None)
         tx_hash = receipt['transactionHash'].hex()
 
-        # For now, just log. You may want to mark donation as refunded or reduce campaign current_amount.
-        # Since you chose not to have a 'refunded' flag, you could decrement campaign.current_amount
-        # But careful: campaign may already be canceled. Simpler: just log.
         logger.info(f"RefundIssued: donor {donor}, amount {amount}, campaign {campaign_id}, tx {tx_hash}")
-        # Optionally call a service method to handle refund (e.g., update campaign.current_amount)
-        # from services.campaign_service import CampaignService
-        # service = CampaignService(db)
-        # service.process_refund(campaign_id, donor, amount)
+
+        try:
+            title = f"Campaign #{campaign_id}"
+            if campaign_id:
+                c = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+                if c and c.title:
+                    title = c.title
+            NotificationService(db).create(
+                user_address=donor,
+                campaign_id=campaign_id,
+                message=f"Your donation to '{title}' has been refunded.",
+                type=NotificationType.Alert,
+            )
+        except Exception as ne:
+            logger.error(f"Notification error in handle_refund_issued: {ne}")
+
         db.commit()
     except Exception as e:
         logger.error(f"Error in handle_refund_issued: {e}")

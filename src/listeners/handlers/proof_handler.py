@@ -1,5 +1,7 @@
 from config.database import SessionLocal
 from services.campaign_service import CampaignService
+from services.notification_service import NotificationService
+from models.notification import NotificationType
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,18 @@ async def handle_proof_uploaded(args, receipt):
                 uploaded_by=uploaded_by,
                 tx_hash=tx_hash
             )
+
+            try:
+                title = campaign.title if campaign else f"Campaign #{campaign_id}"
+                notif = NotificationService(db)
+                notif.broadcast_to_donors(
+                    campaign_id=campaign_id,
+                    message=f"Proof of work has been uploaded for '{title}'. Review it and cast your vote.",
+                    type=NotificationType.ActionRequired,
+                )
+            except Exception as ne:
+                logger.error(f"Notification error in handle_proof_uploaded: {ne}")
+
             db.commit()
             logger.info(f"Processed ProofUploaded for campaign {campaign_id}, hash: {ipfs_hash}")
         else:
