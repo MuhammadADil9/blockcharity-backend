@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
+from datetime import date, datetime, timedelta
+from pydantic import BaseModel
 from models.campaign import Campaign
 from models.distributor import Distributor
 from models.donation import Donation
@@ -9,6 +11,10 @@ from models.donor import Donor
 from schemas.user import CampaignCreateRequest, CampaignResponse, DonorDonationResponse
 from config.database import get_db
 from services.ipfs_service import IPFSService
+
+
+class ExtendCampaignRequest(BaseModel):
+    new_end_date: date
 
 router = APIRouter(prefix="/api", tags=["Campaigns"])
 
@@ -204,3 +210,40 @@ def get_distributor_campaigns(address: str, db: Session = Depends(get_db)):
         c.distributor_profile_pic = pic
         campaigns.append(c)
     return campaigns
+
+
+@router.patch("/campaigns/{id}/extend")
+def extend_campaign(
+    id: int,
+    body: ExtendCampaignRequest,
+    distributor_address: str = Query(..., description="Wallet address of the campaign distributor"),
+    db: Session = Depends(get_db),
+):
+    campaign = db.query(Campaign).filter(Campaign.id == id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    if campaign.status != 0:
+        raise HTTPException(status_code=400, detail="Campaign is not active")
+    if campaign.activity_status != 0:
+        raise HTTPException(status_code=400, detail="Campaign milestone already reached")
+    if campaign.distributor_address.lower() != distributor_address.lower():
+        raise HTTPException(status_code=403, detail="Only the campaign distributor can extend")
+
+    new_end = body.new_end_date
+    if new_end <= date.today():
+        raise HTTPException(status_code=400, detail="New end date must be in the future")
+
+    current_end = campaign.end_date.date() if campaign.end_date else None
+    if current_end is None or new_end <= current_end:
+        raise HTTPException(status_code=400, detail="New end date must be after current end date")
+    if new_end > current_end + timedelta(days=15):
+        raise HTTPException(status_code=400, detail="Extension cannot exceed 15 days from current end date")
+
+    # TODO: If the smart contract also enforces end_date on-chain (e.g. to gate donations),
+    # call the contract's equivalent update method here after the DB write.
+    # Do not modify the contract — coordinate with the frontend team first.
+
+    campaign.end_date = datetime.combine(new_end, datetime.min.time())
+    db.commit()
+
+    return {"id": campaign.id, "end_date": campaign.end_date.date().isoformat()}

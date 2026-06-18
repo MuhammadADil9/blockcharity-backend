@@ -1,3 +1,8 @@
-fastapi[standard]
-python-dotenv
-openai
+fastapi[standard]==0.115.14
+uvicorn==0.38.0
+sqlalchemy==2.0.44
+psycopg2-binary==2.9.11
+python-dotenv==1.2.1
+web3==7.14.0
+openai==2.43.0
+requests==2.32.5
